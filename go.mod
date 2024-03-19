@@ -6,6 +6,10 @@ require (
 	github.com/DataDog/datadog-go/v5 v5.5.0
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/golang-migrate/migrate/v4 v4.17.0
+	github.com/jmoiron/sqlx v1.3.5
+	github.com/lib/pq v1.10.9
+	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli v1.22.14
@@ -52,7 +56,6 @@ require (
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
