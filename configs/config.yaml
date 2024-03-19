@@ -1,0 +1,22 @@
+app:
+  name: 'ewallet'
+  address: '127.0.0.1'
+  port: '3000'
+database:
+  host: 'postgres'
+  name: 'ewallet'
+  username: 'postgres'
+  port: '5432'
+  password: 'password'
+statsd:
+  host: '127.0.0.1'
+  port: '8125'
+datadog:
+  enabled: 'false'
+  env: 'staging'
+  service: 'go-boilerplate'
+  version: '0.0.1'
+sentry:
+  enabled: 'false'
+  dsn: 'https://<key>@sentry.io/<project>'
+
