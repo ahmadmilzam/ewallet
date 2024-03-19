@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS transfers;
+DROP TABLE IF EXISTS journals;
+DROP TABLE IF EXISTS wallets;
+DROP TABLE IF EXISTS accounts;

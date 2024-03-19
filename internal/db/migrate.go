@@ -22,7 +22,7 @@ type Migrations interface {
 
 func CreateMigrate(db *sql.DB, driverName, databaseName string) Migrations {
 	return &PostgresMigrations{
-		sourceFile:   "./migrations/",
+		sourceFile:   "migrations/",
 		databaseName: databaseName,
 	}
 }
@@ -35,6 +35,7 @@ type PostgresMigrations struct {
 
 func (p *PostgresMigrations) init() error {
 	if p.migrate != nil {
+		fmt.Println("p.migrate not nil")
 		return nil
 	}
 
@@ -43,9 +44,11 @@ func (p *PostgresMigrations) init() error {
 
 	sourceFile := fmt.Sprintf("file://%s", p.sourceFile)
 	driver, err := postgres.WithInstance(sql.DB.DB, &postgres.Config{})
+
 	if err != nil {
 		return err
 	}
+
 	m, err := migrate.NewWithDatabaseInstance(sourceFile, p.databaseName, driver)
 	if err != nil {
 		return err
@@ -58,6 +61,7 @@ func (p *PostgresMigrations) init() error {
 
 func (p *PostgresMigrations) Up() error {
 	if err := p.init(); err != nil {
+		fmt.Println("error init PG migrate")
 		return err
 	}
 

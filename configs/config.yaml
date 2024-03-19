@@ -3,7 +3,7 @@ app:
   address: '127.0.0.1'
   port: '3000'
 database:
-  host: 'postgres'
+  host: 'localhost'
   name: 'ewallet'
   username: 'postgres'
   port: '5432'
@@ -14,7 +14,7 @@ statsd:
 datadog:
   enabled: 'false'
   env: 'staging'
-  service: 'go-boilerplate'
+  service: 'ewallet'
   version: '0.0.1'
 sentry:
   enabled: 'false'

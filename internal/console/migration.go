@@ -16,8 +16,7 @@ const (
 func Migration(d *sql.DB) cli.Command {
 	var config = config.GetDBConfig()
 	var migrate = db.CreateMigrate(d, "postgres", config.Name)
-	// fmt.Println("==========")
-	// fmt.Println(os.Args)
+
 	return cli.Command{
 		Name:        "migrate",
 		Description: "migrate the database",
@@ -34,9 +33,6 @@ func Migration(d *sql.DB) cli.Command {
 					},
 				},
 				Action: func(c *cli.Context) {
-					fmt.Println("========")
-					fmt.Println(c.String("filename"))
-					fmt.Println("========")
 					if err := migrate.Create(c.String("filename")); err != nil {
 						panic(fmt.Sprintf("Can't create db file with error: %v", err.Error()))
 					}
