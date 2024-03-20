@@ -8,7 +8,7 @@ run: build
 	./bin/ewallet start
 
 migrate-create:
-	go run cmd/ewallet/main.go migrate create --filename ${FILENAME}
+	go run cmd/ewallet/main.go migrate create --filename $(FILENAME)
 
 migrate-up:
 	go run cmd/ewallet/main.go migrate up
@@ -25,4 +25,3 @@ static-check:
 
 copy-config:
 	cp ./configs/config.yaml.example ./configs/config.yaml
-
