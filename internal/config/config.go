@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -44,6 +45,7 @@ func Load(cfgName, path string) error {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	_ = viper.ReadInConfig()
 	return viper.Unmarshal(&c)

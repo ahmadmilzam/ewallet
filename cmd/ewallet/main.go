@@ -5,8 +5,8 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/internal/config"
 	"github.com/ahmadmilzam/ewallet/internal/console"
+	"github.com/ahmadmilzam/ewallet/internal/db/sqlclient"
 	"github.com/ahmadmilzam/ewallet/pkg/logger"
-	"github.com/ahmadmilzam/ewallet/pkg/sqlclient"
 	"github.com/ahmadmilzam/ewallet/pkg/statsd"
 	"github.com/ahmadmilzam/ewallet/pkg/trace"
 	"github.com/urfave/cli"
@@ -16,11 +16,11 @@ func main() {
 	cliApp := cli.NewApp()
 
 	_ = config.Load("config", "./configs")
-	logger.Init()
+	// logger.Init()
+	logger.InitializeLogger(logger.NewOption(logger.WithLevel("debug")))
 	statsd.Init()
 	trace.Init()
 	defer trace.Stop()
-
 	sqlClient := sqlclient.New()
 	defer sqlClient.Close()
 
@@ -28,6 +28,7 @@ func main() {
 		console.StartServer(),
 		console.Migration(sqlClient.DB.DB),
 	}
+
 	if err := cliApp.Run(os.Args); err != nil {
 		panic(err)
 	}

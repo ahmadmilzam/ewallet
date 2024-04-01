@@ -27,7 +27,7 @@ func New() *client {
 	db, err := sqlxtrace.Open("postgres", dbConfig.GetConnectionURI(), sqltrace.WithDBMPropagation(tracer.DBMPropagationModeFull))
 
 	if err != nil {
-		logger.Fatalf("failure when opening db connection to: %s err: %v", dbConfig.GetConnectionURI(), err)
+		logger.ErrAttr(err)
 	}
 	db.SetMaxIdleConns(dbConfig.Connection.MaxIdleConn)
 	db.SetMaxOpenConns(dbConfig.Connection.MaxOpenConn)

@@ -40,6 +40,6 @@ func initSentry() {
 		Dsn: cfg.DSN,
 	})
 	if err != nil {
-		logger.Fatalf("sentry.Init: %s", err)
+		logger.ErrAttr(err)
 	}
 }

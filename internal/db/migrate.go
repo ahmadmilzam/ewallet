@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/pkg/sqlclient"
+	"github.com/ahmadmilzam/ewallet/internal/db/sqlclient"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

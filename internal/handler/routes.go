@@ -25,6 +25,7 @@ func Serve(ctx context.Context, addr string, deps Dependencies) error {
 // Routes returns an array of server.Route with configured middleware for each.
 func Routes() []server.Route {
 	instrumentStatsD := middleware.InstrumentStatsD()
+
 	return []server.Route{
 		{
 			Method: http.MethodGet,
@@ -32,6 +33,22 @@ func Routes() []server.Route {
 			Handler: []gin.HandlerFunc{
 				instrumentStatsD,
 				apiv1.Ping(),
+			},
+		},
+		{
+			Method: http.MethodPost,
+			Path:   "v1/accounts",
+			Handler: []gin.HandlerFunc{
+				instrumentStatsD,
+				apiv1.CreateAccount(),
+			},
+		},
+		{
+			Method: http.MethodGet,
+			Path:   "v1/accounts/:id",
+			Handler: []gin.HandlerFunc{
+				instrumentStatsD,
+				apiv1.GetAccount(),
 			},
 		},
 	}

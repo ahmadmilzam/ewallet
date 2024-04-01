@@ -13,9 +13,9 @@ const (
 	ERR_NO_CHANGE = "no change"
 )
 
-func Migration(d *sql.DB) cli.Command {
+func Migration(sdb *sql.DB) cli.Command {
 	var config = config.GetDBConfig()
-	var migrate = db.CreateMigrate(d, "postgres", config.Name)
+	var migrate = db.CreateMigrate(sdb, "postgres", config.Name)
 
 	return cli.Command{
 		Name:        "migrate",
