@@ -1,12 +1,11 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/db/sqlclient"
+	"github.com/ahmadmilzam/ewallet/db/sqlclient"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,9 +19,9 @@ type Migrations interface {
 	Create(title string) error
 }
 
-func CreateMigrate(db *sql.DB, driverName, databaseName string) Migrations {
+func CreateMigrate(databaseName string) Migrations {
 	return &PostgresMigrations{
-		sourceFile:   "migrations/",
+		sourceFile:   "db/migrations/",
 		databaseName: databaseName,
 	}
 }

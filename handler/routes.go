@@ -4,16 +4,17 @@ import (
 	"context"
 	"net/http"
 
-	apiv1 "github.com/ahmadmilzam/ewallet/internal/handler/apiv1"
-	"github.com/ahmadmilzam/ewallet/internal/handler/middleware"
-	"github.com/ahmadmilzam/ewallet/internal/handler/server"
+	apiv1 "github.com/ahmadmilzam/ewallet/handler/apiv1"
+	"github.com/ahmadmilzam/ewallet/handler/middleware"
+	"github.com/ahmadmilzam/ewallet/handler/server"
 	"github.com/gin-gonic/gin"
 )
 
 // Dependencies contains dependencies required for server and handlers.
-type Dependencies struct{}
+// type Dependencies struct{}
 
-func Serve(ctx context.Context, addr string, deps Dependencies) error {
+// func Serve(ctx context.Context, addr string, deps Dependencies) error {
+func Serve(ctx context.Context, addr string) error {
 	srv := server.New()
 	if _, err := srv.Register(Routes()); err != nil {
 		return err

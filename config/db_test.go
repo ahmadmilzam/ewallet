@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/ahmadmilzam/ewallet/internal/config"
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/stretchr/testify/assert"
 )
 

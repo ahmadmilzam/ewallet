@@ -3,7 +3,7 @@ package trace
 import (
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/config"
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/pkg/logger"
 	"github.com/getsentry/sentry-go"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"

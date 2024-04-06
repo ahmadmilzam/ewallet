@@ -3,7 +3,7 @@ package sqlclient_test
 import (
 	"testing"
 
-	"github.com/ahmadmilzam/ewallet/internal/db/sqlclient"
+	"github.com/ahmadmilzam/ewallet/db/sqlclient"
 	"github.com/stretchr/testify/assert"
 )
 

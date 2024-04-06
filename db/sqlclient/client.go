@@ -3,7 +3,7 @@ package sqlclient
 import (
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/config"
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -13,7 +13,7 @@ import (
 )
 
 type client struct {
-	DB *sqlx.DB
+	*sqlx.DB
 }
 
 func (c *client) Close() {
@@ -34,5 +34,5 @@ func New() *client {
 	lifeTime := time.Second * time.Duration(dbConfig.Connection.MaxLifeTimeConn)
 	db.SetConnMaxLifetime(lifeTime)
 
-	return &client{db}
+	return &client{DB: db}
 }

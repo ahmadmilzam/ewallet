@@ -24,4 +24,4 @@ static-check:
 	staticcheck ./...
 
 copy-config:
-	cp ./configs/config.yaml.example ./configs/config.yaml
+	cp ./config/config.yaml.example ./config/config.yaml

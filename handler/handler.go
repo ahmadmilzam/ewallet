@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/model"
+	"github.com/ahmadmilzam/ewallet/model"
 	"github.com/gin-gonic/gin"
 )
 

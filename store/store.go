@@ -3,7 +3,7 @@ package store
 import (
 	"fmt"
 
-	"github.com/ahmadmilzam/ewallet/internal/model"
+	"github.com/ahmadmilzam/ewallet/model"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )

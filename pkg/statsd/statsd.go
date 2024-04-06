@@ -2,7 +2,7 @@ package statsd
 
 import (
 	dogStatsD "github.com/DataDog/datadog-go/v5/statsd"
-	"github.com/ahmadmilzam/ewallet/internal/config"
+	"github.com/ahmadmilzam/ewallet/config"
 )
 
 var statsDClient dogStatsD.ClientInterface

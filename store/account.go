@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ahmadmilzam/ewallet/internal/model"
+	"github.com/ahmadmilzam/ewallet/model"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 )
