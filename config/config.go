@@ -27,17 +27,17 @@ type DatadogConfig struct {
 	Version string `mapstructure:"version"`
 }
 
-type SentryConfig struct {
-	Enabled bool   `mapstructure:"enabled"`
-	DSN     string `mapstructure:"dsn"`
-}
+// type SentryConfig struct {
+// 	Enabled bool   `mapstructure:"enabled"`
+// 	DSN     string `mapstructure:"dsn"`
+// }
 
 type config struct {
-	App      AppConfig     `mapstructure:"app"`
-	StatsD   StatsDConfig  `mapstructure:"statsd"`
-	Datadog  DatadogConfig `mapstructure:"datadog"`
-	Sentry   SentryConfig  `mapstructure:"sentry"`
-	DBConfig DBConfig      `mapstructure:"database"`
+	App     AppConfig     `mapstructure:"app"`
+	StatsD  StatsDConfig  `mapstructure:"statsd"`
+	Datadog DatadogConfig `mapstructure:"datadog"`
+	// Sentry   SentryConfig  `mapstructure:"sentry"`
+	DBConfig DBConfig `mapstructure:"database"`
 }
 
 func Load(cfgName, path string) error {
@@ -63,9 +63,9 @@ func GetDatadogConfig() DatadogConfig {
 	return c.Datadog
 }
 
-func GetSentry() SentryConfig {
-	return c.Sentry
-}
+// func GetSentry() SentryConfig {
+// 	return c.Sentry
+// }
 
 func GetDBConfig() DBConfig {
 	return c.DBConfig
