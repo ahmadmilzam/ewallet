@@ -3,23 +3,24 @@ package store
 import (
 	"fmt"
 
-	"github.com/ahmadmilzam/ewallet/model"
-	"github.com/jmoiron/sqlx"
+	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
 	_ "github.com/lib/pq"
 )
 
-func NewStore(datasource string) (*Store, error) {
-	db, err := sqlx.Open("postgres", datasource)
+func NewStore() (*Store, error) {
+	sql, err := pgclient.New()
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
+	defer sql.Close()
 
-	if err := db.Ping(); err != nil {
+	if err := sql.DB.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 
 	return &Store{
-		AccountStore: NewAccountStore(db),
+		AccountQueryStore: NewAccountStore(sql.DB),
 	}, nil
 
 	// alt version
@@ -29,7 +30,7 @@ func NewStore(datasource string) (*Store, error) {
 }
 
 type Store struct {
-	model.AccountStore // TODO: add another store here and in model.Store interface
+	entity.AccountQueryStore // TODO: add another store here and in model.Store interface
 }
 
 // alt version

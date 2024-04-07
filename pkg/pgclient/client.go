@@ -1,4 +1,4 @@
-package sqlclient
+package pgclient
 
 import (
 	"time"
@@ -20,7 +20,7 @@ func (c *client) Close() {
 	_ = c.DB.Close()
 }
 
-func New() *client {
+func New() (*client, error) {
 	dbConfig := config.GetDBConfig()
 
 	sqltrace.Register("postgres", &pq.Driver{}, sqltrace.WithDBMPropagation(tracer.DBMPropagationModeFull), sqltrace.WithServiceName("ewallet.db"))
@@ -34,5 +34,10 @@ func New() *client {
 	lifeTime := time.Second * time.Duration(dbConfig.Connection.MaxLifeTimeConn)
 	db.SetConnMaxLifetime(lifeTime)
 
-	return &client{DB: db}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return &client{db}, nil
 }

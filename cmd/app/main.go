@@ -1,18 +1,19 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/ahmadmilzam/ewallet/config"
-	"github.com/ahmadmilzam/ewallet/db"
-	"github.com/ahmadmilzam/ewallet/handler"
+	"github.com/ahmadmilzam/ewallet/internal/api"
+	"github.com/ahmadmilzam/ewallet/internal/api/httpserver"
+	"github.com/ahmadmilzam/ewallet/internal/migration"
+	"github.com/ahmadmilzam/ewallet/internal/store"
+	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/logger"
 	"github.com/ahmadmilzam/ewallet/pkg/statsd"
 	"github.com/ahmadmilzam/ewallet/pkg/trace"
+	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,8 +27,16 @@ func main() {
 
 	_ = config.Load("config", "./config")
 
-	var dbConfig = config.GetDBConfig()
-	var migrate = db.CreateMigrate(dbConfig.Name)
+	// HTTP Server -.
+	handler := gin.Default()
+	appConfig := config.GetAppConfig()
+	dbConfig := config.GetDBConfig()
+	migrate := migration.CreateMigrate(dbConfig.Name)
+	pgstore, err := store.NewStore()
+
+	if err != nil {
+		panic(err)
+	}
 
 	// logger.Init()
 	logger.InitializeLogger(logger.NewOption(logger.WithLevel("debug")))
@@ -35,17 +44,19 @@ func main() {
 	trace.Init()
 	defer trace.Stop()
 
+	accountUsecase := usecase.NewAccountUsecase(pgstore)
+
+	// Passing also the basic auth middleware to all  Routers -.
+	api.NewRouter(handler, accountUsecase)
+
+	httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))
+
 	cliApp.Commands = []*cli.Command{
 		{
 			Name:  "start",
 			Usage: "Starting up ewallet",
 			Action: func(c *cli.Context) error {
-				ctx, cancel := context.WithCancel(context.Background())
-				err := handler.Serve(ctx, config.GetServerAddress())
-				if err != nil {
-					panic(fmt.Sprintf("server exited with err: %s\n", err.Error()))
-				}
-				go callOnInterrupt(cancel)
+				httpServer.Start()
 				return nil
 			},
 		},
@@ -98,11 +109,4 @@ func main() {
 	if err := cliApp.Run(os.Args); err != nil {
 		panic(err)
 	}
-}
-
-func callOnInterrupt(cancel context.CancelFunc) {
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
-	<-sigCh
-	cancel()
 }

@@ -16,7 +16,4 @@ datadog:
   env: 'staging'
   service: 'ewallet'
   version: '0.0.1'
-sentry:
-  enabled: 'false'
-  dsn: 'https://<key>@sentry.io/<project>'
 

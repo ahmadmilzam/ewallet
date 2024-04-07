@@ -51,12 +51,9 @@ func Load(cfgName, path string) error {
 	return viper.Unmarshal(&c)
 }
 
-func GetServerAddress() string {
-	return fmt.Sprintf("%s:%s", c.App.Address, c.App.Port)
-}
-
-func GetStatsDAddress() string {
-	return fmt.Sprintf("%s:%s", c.StatsD.Host, c.StatsD.Port)
+func GetAppConfig() AppConfig {
+	return c.App
+	// return fmt.Sprintf("%s:%s", c.App.Address, c.App.Port)
 }
 
 func GetDatadogConfig() DatadogConfig {
@@ -69,4 +66,8 @@ func GetDatadogConfig() DatadogConfig {
 
 func GetDBConfig() DBConfig {
 	return c.DBConfig
+}
+
+func GetStatsDAddress() string {
+	return fmt.Sprintf("%s:%s", c.StatsD.Host, c.StatsD.Port)
 }

@@ -1,11 +1,11 @@
-package db
+package migration
 
 import (
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/db/sqlclient"
+	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,66 +20,70 @@ type Migrations interface {
 }
 
 func CreateMigrate(databaseName string) Migrations {
-	return &PostgresMigrations{
-		sourceFile:   "db/migrations/",
+	return &DBMigrations{
+		sourceFile:   "migrations/",
 		databaseName: databaseName,
 	}
 }
 
-type PostgresMigrations struct {
+type DBMigrations struct {
 	migrate      *migrate.Migrate
 	sourceFile   string
 	databaseName string
 }
 
-func (p *PostgresMigrations) init() error {
-	if p.migrate != nil {
-		fmt.Println("p.migrate not nil")
+func (m *DBMigrations) init() error {
+	if m.migrate != nil {
+		fmt.Println("m.migrate not nil")
 		return nil
 	}
 
-	sql := sqlclient.New()
+	sql, err := pgclient.New()
+	if err != nil {
+		return fmt.Errorf("error opening database: %w", err)
+	}
+
 	defer sql.Close()
 
-	sourceFile := fmt.Sprintf("file://%s", p.sourceFile)
+	sourceFile := fmt.Sprintf("file://%s", m.sourceFile)
 	driver, err := postgres.WithInstance(sql.DB.DB, &postgres.Config{})
 
 	if err != nil {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(sourceFile, p.databaseName, driver)
+	mi, err := migrate.NewWithDatabaseInstance(sourceFile, m.databaseName, driver)
 	if err != nil {
 		return err
 	}
 
-	p.migrate = m
+	m.migrate = mi
 
 	return nil
 }
 
-func (p *PostgresMigrations) Up() error {
-	if err := p.init(); err != nil {
+func (m *DBMigrations) Up() error {
+	if err := m.init(); err != nil {
 		fmt.Println("error init PG migrate")
 		return err
 	}
 
-	return p.migrate.Up()
+	return m.migrate.Up()
 }
 
-func (p *PostgresMigrations) Down() error {
-	if err := p.init(); err != nil {
+func (m *DBMigrations) Down() error {
+	if err := m.init(); err != nil {
 		return err
 	}
 
-	return p.migrate.Steps(-1)
+	return m.migrate.Steps(-1)
 }
 
-func (p *PostgresMigrations) Create(title string) error {
+func (m *DBMigrations) Create(title string) error {
 	if title == "" {
 		return errors.New("Title can't be empty")
 	}
-	fileNameUp, fileNameDown := p.generateFileName(title)
+	fileNameUp, fileNameDown := m.generateFileName(title)
 
 	if _, err := os.Create(fileNameUp); err != nil {
 		return err
@@ -93,12 +97,12 @@ func (p *PostgresMigrations) Create(title string) error {
 	return nil
 }
 
-func (p PostgresMigrations) generateFileName(title string) (fileNameUp string, fileNameDown string) {
+func (m *DBMigrations) generateFileName(title string) (fileNameUp string, fileNameDown string) {
 	now := time.Now()
 	unixTime := now.Unix()
 
-	fileNameUp = fmt.Sprintf("%s/%d_%s.up.sql", p.sourceFile, unixTime, title)
-	fileNameDown = fmt.Sprintf("%s/%d_%s.down.sql", p.sourceFile, unixTime, title)
+	fileNameUp = fmt.Sprintf("%s/%d_%s.um.sql", m.sourceFile, unixTime, title)
+	fileNameDown = fmt.Sprintf("%s/%d_%s.down.sql", m.sourceFile, unixTime, title)
 
 	return fileNameUp, fileNameDown
 }
