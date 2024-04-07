@@ -1,11 +1,12 @@
 package v1
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 
-	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/ahmadmilzam/ewallet/pkg/logger"
+	"github.com/ahmadmilzam/ewallet/pkg/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,36 +25,56 @@ func NewAccountRoute(handler *gin.RouterGroup, u usecase.AccountUsecaseInterface
 
 func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	var params usecase.CreateAccountReqParams
+	c := context.Background()
 
 	if err := ctx.ShouldBindJSON(&params); err != nil {
-		logger.ErrAttr(err)
-		ctx.JSON(entity.GetStatusCode(err), entity.ErrorCodeResponse(err))
+		slog.Error("unprocessable data", "error", err)
+		ctx.JSON(http.StatusBadRequest, errors.ErrorResponse{
+			Success: false,
+			Error: errors.ErrorStruct{
+				Code:    "40001",
+				Message: "Unprocessable data",
+			},
+		})
 		return
 	}
 
-	blog, err := route.usecase.CreateAccount(ctx, params)
+	account, err := route.usecase.CreateAccount(c, params)
 
 	if err != nil {
-		ctx.JSON(entity.GetStatusCode(err), entity.ErrorCodeResponse(err))
+		slog.Error("fail to create account", "error", err)
+		ctx.JSON(http.StatusInternalServerError, errors.ErrorResponse{
+			Success: false,
+			Error: errors.ErrorStruct{
+				Code:    "50001",
+				Message: "Fail to store data",
+			},
+		})
+		return
 	}
 
-	ctx.JSON(http.StatusCreated, blog)
+	ctx.JSON(http.StatusCreated, SuccessResponse{
+		Success: true,
+		Data:    account,
+	})
 }
 
 func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	var req usecase.GetAccountReqParams
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		logger.ErrAttr(err)
-		ctx.JSON(entity.GetStatusCode(err), entity.ErrorCodeResponse(err))
+	c := context.Background()
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		slog.Error("get account", "param", ctx.Param("phone"), "error", err)
+		ctx.JSON(errors.GetStatusCode(err), errors.ErrorCodeResponse(err))
 		return
 	}
 
-	blog, err := route.usecase.GetAccount(ctx, req.Phone)
+	account, err := route.usecase.GetAccount(c, req.Phone)
 
 	if err != nil {
-		ctx.JSON(entity.GetStatusCode(err), entity.ErrorCodeResponse(err))
+		slog.Error("Unable to get account", "error", err)
+		ctx.JSON(errors.GetStatusCode(err), errors.ErrorCodeResponse(err))
+		return
 	}
 
-	ctx.JSON(http.StatusCreated, blog)
+	ctx.JSON(http.StatusCreated, account)
 }

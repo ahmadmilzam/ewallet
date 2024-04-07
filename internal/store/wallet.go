@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -35,7 +34,7 @@ func (ws *WalletStore) CreateWallet(ctx context.Context, w entity.Wallet) (entit
 	return mw, nil
 }
 
-func (ws *WalletStore) DeleteWallet(ctx context.Context, id uuid.UUID) error {
+func (ws *WalletStore) DeleteWallet(ctx context.Context, id string) error {
 	_, err := ws.DB.ExecContext(ctx, `DELETE * FROM wallets WHERE id = $1`, id)
 	if err != nil {
 		return fmt.Errorf("error deleting wallet: %w", err)
@@ -44,7 +43,7 @@ func (ws *WalletStore) DeleteWallet(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (ws *WalletStore) FindWallet(ctx context.Context, id uuid.UUID) (entity.Wallet, error) {
+func (ws *WalletStore) FindWallet(ctx context.Context, id string) (entity.Wallet, error) {
 	var mw entity.Wallet
 	err := ws.DB.GetContext(ctx, &mw, `SELECT * FROM wallets WHERE id = $1 LIMIT 1`, id)
 	if err != nil {
@@ -54,7 +53,7 @@ func (ws *WalletStore) FindWallet(ctx context.Context, id uuid.UUID) (entity.Wal
 	return mw, nil
 }
 
-func (ws *WalletStore) FindAccountWallets(ctx context.Context, aid uuid.UUID) ([]entity.Wallet, error) {
+func (ws *WalletStore) FindAccountWallets(ctx context.Context, aid string) ([]entity.Wallet, error) {
 	var amw []entity.Wallet
 
 	err := ws.DB.SelectContext(ctx, &amw, `SELECT * FROM wallets WHERE account_id=$1`, aid)

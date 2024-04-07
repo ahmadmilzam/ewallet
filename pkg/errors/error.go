@@ -1,13 +1,10 @@
-package entity
+package errors
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -17,21 +14,18 @@ var (
 	ErrConflict            = errors.New("CONFLICT")
 	ErrInsufficientFund    = errors.New("INSUFFICIENT_FUND")
 	ErrUnauthorized        = errors.New("UNAUTHORIZED")
-	errStruct              ErrorCodesStruct
+	errStruct              ErrorResponse
 )
 
-// ErrorCodesStruct This is the struct for the error codes -.
-type ErrorCodesStruct struct {
-	ErrorCode    string `json:"error_code"`
-	ErrorMessage string `json:"error_message"`
+type ErrorResponse struct {
+	Success bool        `json:"success"`
+	Error   ErrorStruct `json:"error"`
 }
 
-// CreateError Creates the error code -.
-func CreateError(code string, message string) error {
-
-	err := fmt.Sprintf(`{"error_code": "%s", "error_message": "%s"}`, code, message)
-
-	return errors.New(err)
+// ErrorCodesStruct This is the struct for the error codes -.
+type ErrorStruct struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // GetStatusCode Fetched the status code from the error -.
@@ -41,7 +35,6 @@ func GetStatusCode(err error) int {
 	}
 	errCode := extractErroCode(err)
 
-	logrus.Error(err)
 	switch errCode {
 	case ErrInternalServerError.Error():
 		return http.StatusInternalServerError
@@ -66,11 +59,11 @@ func extractErroCode(err error) string {
 
 	_ = json.Unmarshal([]byte(s), &errStruct)
 
-	return strings.ToUpper(errStruct.ErrorCode)
+	return strings.ToUpper(errStruct.Error.Code)
 }
 
 // ErrorCodeResponse The response message for the error -.
-func ErrorCodeResponse(err error) ErrorCodesStruct {
+func ErrorCodeResponse(err error) ErrorResponse {
 	s := err.Error()
 
 	_ = json.Unmarshal([]byte(s), &errStruct)

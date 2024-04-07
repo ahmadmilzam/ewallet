@@ -38,7 +38,7 @@ func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateA
 
 	ac, err := usecase.store.CreateAccount(ctx, ac)
 	if err != nil {
-		return entity.Account{}, entity.CreateError(entity.ErrNotFound.Error(), err.Error())
+		return entity.Account{}, err
 	}
 
 	return ac, nil
@@ -48,7 +48,7 @@ func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (en
 
 	ac, err := usecase.store.FindAccountByPhone(ctx, phone)
 	if err != nil {
-		return entity.Account{}, entity.CreateError(entity.ErrNotFound.Error(), err.Error())
+		return entity.Account{}, err
 	}
 
 	return ac, nil

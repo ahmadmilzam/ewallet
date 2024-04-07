@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/internal/api"
@@ -27,11 +30,10 @@ func main() {
 
 	_ = config.Load("config", "./config")
 
-	// HTTP Server -.
-	handler := gin.Default()
 	appConfig := config.GetAppConfig()
 	dbConfig := config.GetDBConfig()
 	migrate := migration.CreateMigrate(dbConfig.Name)
+
 	pgstore, err := store.NewStore()
 
 	if err != nil {
@@ -47,16 +49,34 @@ func main() {
 	accountUsecase := usecase.NewAccountUsecase(pgstore)
 
 	// Passing also the basic auth middleware to all  Routers -.
-	api.NewRouter(handler, accountUsecase)
-
-	httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))
 
 	cliApp.Commands = []*cli.Command{
 		{
 			Name:  "start",
 			Usage: "Starting up ewallet",
 			Action: func(c *cli.Context) error {
+				handler := gin.Default()
+				api.NewRouter(handler, accountUsecase)
+
+				httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))
 				httpServer.Start()
+				// Waiting signal -.
+				interrupt := make(chan os.Signal, 1)
+				signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+				select {
+				case s := <-interrupt:
+					slog.Info("app run", "signal", s.String())
+				case err = <-httpServer.Notify():
+					slog.Error("app interupted", fmt.Errorf("httpServer.Notify: %w", err))
+				}
+
+				// Shutdown
+				err = httpServer.Shutdown()
+
+				if err != nil {
+					slog.Error("app shutdown", fmt.Errorf("httpServer.Shutdown: %w", err))
+				}
 				return nil
 			},
 		},

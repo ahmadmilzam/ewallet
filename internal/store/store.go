@@ -13,13 +13,13 @@ func NewStore() (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
-	defer sql.Close()
 
 	if err := sql.DB.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 
 	return &Store{
+		DB:                sql,
 		AccountQueryStore: NewAccountStore(sql.DB),
 	}, nil
 
@@ -30,6 +30,7 @@ func NewStore() (*Store, error) {
 }
 
 type Store struct {
+	DB                       *pgclient.Client
 	entity.AccountQueryStore // TODO: add another store here and in model.Store interface
 }
 

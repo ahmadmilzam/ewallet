@@ -9,7 +9,8 @@ CREATE TABLE "wallets" (
 
 CREATE TABLE "accounts" (
   "id" varchar PRIMARY KEY,
-  "phone" int UNIQUE NOT NULL,
+  "phone" varchar UNIQUE NOT NULL,
+  "name" varchar NOT NULL,
   "role" varchar NOT NULL,
   "status" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',

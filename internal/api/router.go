@@ -54,8 +54,9 @@ import (
 
 func NewRouter(handler *gin.Engine, u usecase.AccountUsecaseInterface) {
 	// Options -.
-	handler.Use(gin.Logger())
-	handler.Use(gin.Recovery())
+	// gin.SetMode(gin.DebugMode)
+	// handler.Use(gin.Logger())
+	// handler.Use(gin.Recovery())
 
 	// K8s probe for kubernetes health checks -.
 	handler.GET("/health", func(c *gin.Context) {
@@ -68,7 +69,7 @@ func NewRouter(handler *gin.Engine, u usecase.AccountUsecaseInterface) {
 	})
 
 	// Routers -.
-	rgroupv1 := handler.Group("/api/v1")
+	rgroupv1 := handler.Group("/v1")
 	{
 		v1.NewAccountRoute(rgroupv1, u)
 	}

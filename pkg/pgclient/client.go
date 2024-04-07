@@ -12,15 +12,15 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-type client struct {
+type Client struct {
 	*sqlx.DB
 }
 
-func (c *client) Close() {
+func (c *Client) Close() {
 	_ = c.DB.Close()
 }
 
-func New() (*client, error) {
+func New() (*Client, error) {
 	dbConfig := config.GetDBConfig()
 
 	sqltrace.Register("postgres", &pq.Driver{}, sqltrace.WithDBMPropagation(tracer.DBMPropagationModeFull), sqltrace.WithServiceName("ewallet.db"))
@@ -29,6 +29,7 @@ func New() (*client, error) {
 	if err != nil {
 		logger.ErrAttr(err)
 	}
+
 	db.SetMaxIdleConns(dbConfig.Connection.MaxIdleConn)
 	db.SetMaxOpenConns(dbConfig.Connection.MaxOpenConn)
 	lifeTime := time.Second * time.Duration(dbConfig.Connection.MaxLifeTimeConn)
@@ -39,5 +40,5 @@ func New() (*client, error) {
 		return nil, err
 	}
 
-	return &client{db}, nil
+	return &Client{DB: db}, nil
 }

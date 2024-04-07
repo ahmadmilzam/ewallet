@@ -20,7 +20,7 @@ const (
 )
 
 func ParseLevel(level string) slog.Level {
-	logLevel := slog.Level(4)
+	logLevel := slog.Level(8)
 	err := logLevel.UnmarshalText([]byte(level))
 	if err != nil {
 		slog.Error("failed to parse log level", ErrAttr(err))
