@@ -101,7 +101,7 @@ func (m *DBMigrations) generateFileName(title string) (fileNameUp string, fileNa
 	now := time.Now()
 	unixTime := now.Unix()
 
-	fileNameUp = fmt.Sprintf("%s/%d_%s.um.sql", m.sourceFile, unixTime, title)
+	fileNameUp = fmt.Sprintf("%s/%d_%s.up.sql", m.sourceFile, unixTime, title)
 	fileNameDown = fmt.Sprintf("%s/%d_%s.down.sql", m.sourceFile, unixTime, title)
 
 	return fileNameUp, fileNameDown
