@@ -14,7 +14,7 @@ var (
 	ErrConflict            = errors.New("CONFLICT")
 	ErrInsufficientFund    = errors.New("INSUFFICIENT_FUND")
 	ErrUnauthorized        = errors.New("UNAUTHORIZED")
-	errStruct              ErrorResponse
+	ErrResponseStruct      ErrorResponse
 )
 
 type ErrorResponse struct {
@@ -33,6 +33,7 @@ func GetStatusCode(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
+
 	errCode := extractErroCode(err)
 
 	switch errCode {
@@ -57,16 +58,16 @@ func GetStatusCode(err error) int {
 func extractErroCode(err error) string {
 	s := err.Error()
 
-	_ = json.Unmarshal([]byte(s), &errStruct)
+	_ = json.Unmarshal([]byte(s), &ErrResponseStruct)
 
-	return strings.ToUpper(errStruct.Error.Code)
+	return strings.ToUpper(ErrResponseStruct.Error.Code)
 }
 
 // ErrorCodeResponse The response message for the error -.
 func ErrorCodeResponse(err error) ErrorResponse {
 	s := err.Error()
 
-	_ = json.Unmarshal([]byte(s), &errStruct)
+	_ = json.Unmarshal([]byte(s), &ErrResponseStruct)
 
-	return errStruct
+	return ErrResponseStruct
 }

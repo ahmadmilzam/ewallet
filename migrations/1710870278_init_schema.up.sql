@@ -1,7 +1,7 @@
 CREATE TABLE "wallets" (
   "id" varchar PRIMARY KEY,
   "account_id" varchar NOT NULL,
-  "balance" bigint NOT NULL,
+  "balance" numeric(22, 2) NOT NULL,
   "type" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
   "updated_at" timestamptz NOT NULL DEFAULT 'now()'

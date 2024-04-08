@@ -33,12 +33,12 @@ type WalletQueryStore interface {
 }
 
 type Wallet struct {
-	ID        string    `db:"id"`
-	AccountId string    `db:"account_id"`
-	Balance   int64     `db:"balance"`
-	Type      string    `db:"type"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        string    `json:"id" db:"id"`
+	AccountId string    `json:"account_id" db:"account_id"`
+	Balance   int64     `json:"balance" db:"balance"`
+	Type      string    `json:"type" db:"type"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type TransferQueryStore interface {
@@ -50,13 +50,13 @@ type TransferQueryStore interface {
 }
 
 type Transfer struct {
-	ID            string    `db:"id"`
-	WalletID      string    `db:"wallet_id"`
-	CreditAmount  int64     `db:"credit_amount"`
-	DebitAmount   int64     `db:"debit_amount"`
-	CorrelationID string    `db:"correlation_id"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
+	ID            string    `json:"id" db:"id"`
+	WalletID      string    `json:"wallet_id" db:"wallet_id"`
+	CreditAmount  int64     `json:"credit_amount" db:"credit_amount"`
+	DebitAmount   int64     `json:"debit_amount" db:"debit_amount"`
+	CorrelationID string    `json:"correlation" db:"correlation_id"`
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type JournalQueryStore interface {
@@ -68,12 +68,12 @@ type JournalQueryStore interface {
 }
 
 type Journal struct {
-	ID          string    `db:"id"`
-	SrcWalletID string    `db:"src_wallet_id"`
-	DstWalletID string    `db:"src_wallet_id"`
-	Amount      int64     `db:"amount"`
-	Reference   string    `db:"reference"`
-	CreatedAt   time.Time `db:"created_at"`
+	ID          string    `json:"id" db:"id"`
+	SrcWalletID string    `json:"src_wallet_id" db:"src_wallet_id"`
+	DstWalletID string    `json:"dst_wallet_id" db:"dst_wallet_id"`
+	Amount      float64   `json:"amount" db:"amount"`
+	Reference   string    `json:"reference" db:"reference"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 }
 
 type QueryStore interface {
