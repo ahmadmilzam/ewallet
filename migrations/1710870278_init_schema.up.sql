@@ -11,6 +11,7 @@ CREATE TABLE "accounts" (
   "id" varchar PRIMARY KEY,
   "phone" varchar UNIQUE NOT NULL,
   "name" varchar NOT NULL,
+  "email" varchar NOT NULL,
   "role" varchar NOT NULL,
   "status" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',

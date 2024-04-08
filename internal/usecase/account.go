@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
@@ -52,6 +54,17 @@ func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (en
 	}
 
 	return ac, nil
+}
+
+func (usecase *AccountUsecase) generateCorrelationId(max int) string {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
+	tNow := time.Now().UnixNano()
+
+	random := r.Intn(max)
+	return strconv.Itoa(int(tNow)) + strconv.Itoa(random)
+
 }
 
 // func (usecase *AccountUsecase) CreateBlog(ctx context.Context, body string) (entity.Account, error) {
