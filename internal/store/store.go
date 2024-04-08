@@ -14,6 +14,8 @@ func NewStore() (*Store, error) {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
 
+	// defer sql.DB.Close()
+
 	if err := sql.DB.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/internal/api"
 	"github.com/ahmadmilzam/ewallet/internal/api/httpserver"
+	"github.com/ahmadmilzam/ewallet/internal/api/middleware"
 	"github.com/ahmadmilzam/ewallet/internal/migration"
 	"github.com/ahmadmilzam/ewallet/internal/store"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
@@ -55,7 +56,10 @@ func main() {
 			Name:  "start",
 			Usage: "Starting up ewallet",
 			Action: func(c *cli.Context) error {
-				handler := gin.Default()
+				handler := gin.New()
+				handler.Use(middleware.RequestLog())
+				// handler.Use(gin.CustomRecovery(middleware.ErrorHandler))
+				handler.Use(gin.Recovery())
 				api.NewRouter(handler, accountUsecase)
 
 				httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/ahmadmilzam/ewallet/pkg/errors"
+	"github.com/ahmadmilzam/ewallet/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,9 +29,9 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&params); err != nil {
 		slog.Error("unprocessable data", "error", err)
-		ctx.JSON(http.StatusBadRequest, errors.ErrorResponse{
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse{
 			Success: false,
-			Error: errors.ErrorStruct{
+			Error: utils.ErrorStruct{
 				Code:    "40001",
 				Message: "Unprocessable data",
 			},
@@ -43,9 +43,9 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 
 	if err != nil {
 		slog.Error("fail to create account", "error", err)
-		ctx.JSON(http.StatusInternalServerError, errors.ErrorResponse{
+		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse{
 			Success: false,
-			Error: errors.ErrorStruct{
+			Error: utils.ErrorStruct{
 				Code:    "50001",
 				Message: "Fail to store data",
 			},
@@ -63,8 +63,14 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	var req usecase.GetAccountReqParams
 	c := context.Background()
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		slog.Error("get account", "param", ctx.Param("phone"), "error", err)
-		ctx.JSON(errors.GetStatusCode(err), errors.ErrorCodeResponse(err))
+		slog.Error("bad request", "param", ctx.Param("phone"), "error", err)
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse{
+			Success: false,
+			Error: utils.ErrorStruct{
+				Code:    "40000",
+				Message: "Unprocessable data",
+			},
+		})
 		return
 	}
 
@@ -72,7 +78,13 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 
 	if err != nil {
 		slog.Error("Unable to get account", "error", err)
-		ctx.JSON(errors.GetStatusCode(err), errors.ErrorCodeResponse(err))
+		ctx.JSON(http.StatusNotFound, utils.ErrorResponse{
+			Success: false,
+			Error: utils.ErrorStruct{
+				Code:    "40400",
+				Message: "Account not found",
+			},
+		})
 		return
 	}
 

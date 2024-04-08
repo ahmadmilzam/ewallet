@@ -18,9 +18,9 @@ func NewAccountStore(db *sqlx.DB) *AccountStore {
 	}
 }
 
-func (as *AccountStore) CreateAccount(ctx context.Context, a entity.Account) (entity.Account, error) {
+func (s *AccountStore) CreateAccount(ctx context.Context, a entity.Account) (entity.Account, error) {
 	var ma entity.Account
-	err := as.DB.GetContext(ctx, &ma, `INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+	err := s.DB.GetContext(ctx, &ma, `INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
 		a.ID,
 		a.Phone,
 		a.Name,
@@ -37,9 +37,9 @@ func (as *AccountStore) CreateAccount(ctx context.Context, a entity.Account) (en
 	return ma, nil
 }
 
-func (as *AccountStore) UpgradeAccount(ctx context.Context, id string) (entity.Account, error) {
+func (s *AccountStore) UpgradeAccount(ctx context.Context, id string) (entity.Account, error) {
 	var ac entity.Account
-	err := as.DB.GetContext(ctx, &ac, `UPDATE accounts SET status = 'PREMIUM' WHERE id = $1 RETURNING *`, id)
+	err := s.DB.GetContext(ctx, &ac, `UPDATE accounts SET status = 'PREMIUM' WHERE id = $1 RETURNING *`, id)
 
 	if err != nil {
 		return entity.Account{}, fmt.Errorf("error upgrading account: %w", err)
@@ -48,8 +48,8 @@ func (as *AccountStore) UpgradeAccount(ctx context.Context, id string) (entity.A
 	return ac, nil
 }
 
-func (as *AccountStore) DeleteAccount(ctx context.Context, id string) error {
-	_, err := as.DB.ExecContext(ctx, `DELETE * FROM accounts WHERE id = $1`, id)
+func (s *AccountStore) DeleteAccount(ctx context.Context, id string) error {
+	_, err := s.DB.ExecContext(ctx, `DELETE * FROM accounts WHERE id = $1`, id)
 	if err != nil {
 		return fmt.Errorf("error deleting account: %w", err)
 	}
@@ -57,9 +57,9 @@ func (as *AccountStore) DeleteAccount(ctx context.Context, id string) error {
 	return nil
 }
 
-func (as *AccountStore) FindAccountById(ctx context.Context, id string) (entity.Account, error) {
+func (s *AccountStore) FindAccountById(ctx context.Context, id string) (entity.Account, error) {
 	var ma entity.Account
-	err := as.DB.GetContext(ctx, &ma, `SELECT * FROM accounts WHERE id = $1 LIMIT 1`, id)
+	err := s.DB.GetContext(ctx, &ma, `SELECT * FROM accounts WHERE id = $1 LIMIT 1`, id)
 	if err != nil {
 		return entity.Account{}, fmt.Errorf("error getting account: %w", err)
 	}
@@ -67,9 +67,9 @@ func (as *AccountStore) FindAccountById(ctx context.Context, id string) (entity.
 	return ma, nil
 }
 
-func (as *AccountStore) FindAccountByPhone(ctx context.Context, phone string) (entity.Account, error) {
+func (s *AccountStore) FindAccountByPhone(ctx context.Context, phone string) (entity.Account, error) {
 	var ma entity.Account
-	err := as.DB.GetContext(ctx, &ma, `SELECT * FROM accounts WHERE phone = $1 LIMIT 1`, phone)
+	err := s.DB.GetContext(ctx, &ma, `SELECT * FROM accounts WHERE phone = $1 LIMIT 1`, phone)
 	if err != nil {
 		return entity.Account{}, err
 	}
@@ -77,10 +77,10 @@ func (as *AccountStore) FindAccountByPhone(ctx context.Context, phone string) (e
 	return ma, nil
 }
 
-func (as *AccountStore) FindAccounts(ctx context.Context) ([]entity.Account, error) {
+func (s *AccountStore) FindAccounts(ctx context.Context) ([]entity.Account, error) {
 	var ama []entity.Account
 
-	err := as.DB.SelectContext(ctx, &ama, `SELECT * FROM accounts`)
+	err := s.DB.SelectContext(ctx, &ama, `SELECT * FROM accounts`)
 	if err != nil {
 		return []entity.Account{}, fmt.Errorf("error getting accounts: %w", err)
 	}
