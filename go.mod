@@ -4,8 +4,10 @@ go 1.22.1
 
 require (
 	github.com/DataDog/datadog-go/v5 v5.5.0
+	github.com/dongri/phonenumber v0.1.2
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-faker/faker/v4 v4.4.1
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.3.5

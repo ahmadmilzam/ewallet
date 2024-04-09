@@ -20,10 +20,11 @@ func NewAccountStore(db *sqlx.DB) *AccountStore {
 
 func (s *AccountStore) CreateAccount(ctx context.Context, a entity.Account) (entity.Account, error) {
 	var ma entity.Account
-	err := s.DB.GetContext(ctx, &ma, `INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+	err := s.DB.GetContext(ctx, &ma, `INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
 		a.ID,
 		a.Phone,
 		a.Name,
+		a.Email,
 		a.Role,
 		a.Status,
 		a.CreatedAt,

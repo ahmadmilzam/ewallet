@@ -8,7 +8,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	sql, _ := pgclient.New()
+	sql := pgclient.New()
 	defer sql.Close()
 
 	assert.NotNil(t, sql)

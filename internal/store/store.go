@@ -8,6 +8,7 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -18,10 +19,7 @@ const (
 )
 
 func NewStore() (*Store, error) {
-	sql, err := pgclient.New()
-	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
-	}
+	sql := pgclient.New()
 
 	// defer sql.DB.Close()
 
@@ -31,7 +29,7 @@ func NewStore() (*Store, error) {
 
 	return &Store{
 		DB:                sql,
-		AccountQueryStore: NewAccountStore(sql.DB),
+		AccountQueryStore: NewAccountStore(sql),
 	}, nil
 
 	// alt version
@@ -41,12 +39,12 @@ func NewStore() (*Store, error) {
 }
 
 type Store struct {
-	DB                       *pgclient.Client
+	DB                       *sqlx.DB
 	entity.AccountQueryStore // TODO: add another store here and in model.Store interface
 }
 
 func (s *Store) BeginTx(ctx context.Context) context.Context {
-	tx, _ := s.DB.Begin()
+	tx, _ := s.DB.DB.Begin()
 	ctx = context.WithValue(ctx, Tx, tx)
 	return ctx
 }

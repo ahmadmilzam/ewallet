@@ -38,15 +38,12 @@ func (m *DBMigrations) init() error {
 		return nil
 	}
 
-	sql, err := pgclient.New()
-	if err != nil {
-		return fmt.Errorf("error opening database: %w", err)
-	}
+	sql := pgclient.New()
 
 	defer sql.Close()
 
 	sourceFile := fmt.Sprintf("file://%s", m.sourceFile)
-	driver, err := postgres.WithInstance(sql.DB.DB, &postgres.Config{})
+	driver, err := postgres.WithInstance(sql.DB, &postgres.Config{})
 
 	if err != nil {
 		return err

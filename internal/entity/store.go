@@ -16,11 +16,12 @@ type AccountQueryStore interface {
 }
 
 type Account struct {
-	ID        string    `json:"id" db:"id"`
-	Name      string    `json:"name" db:"name"`
-	Phone     string    `json:"phone" db:"phone"`
-	Role      string    `json:"role" db:"role"`
-	Status    string    `json:"status" db:"status"`
+	ID        string    `json:"id" db:"id" faker:"uuid_hyphenated,unique"`
+	Phone     string    `json:"phone" db:"phone" faker:"customphone,unique"`
+	Name      string    `json:"name" db:"name" faker:"name,unique"`
+	Email     string    `json:"email" db:"email" faker:"email,unique"`
+	Role      string    `json:"role" db:"role" faker:"accountRole"`
+	Status    string    `json:"status" db:"status" faker:"accountStatus"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
