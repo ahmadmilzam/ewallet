@@ -3,15 +3,14 @@ package trace
 import (
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/config"
-	"github.com/ahmadmilzam/ewallet/pkg/logger"
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/getsentry/sentry-go"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 func Init() {
 	initDatadog()
-	initSentry()
+	// initSentry()
 }
 
 func Stop() {
@@ -31,15 +30,15 @@ func initDatadog() {
 	)
 }
 
-func initSentry() {
-	cfg := config.GetSentry()
-	if !cfg.Enabled {
-		return
-	}
-	err := sentry.Init(sentry.ClientOptions{
-		Dsn: cfg.DSN,
-	})
-	if err != nil {
-		logger.Fatalf("sentry.Init: %s", err)
-	}
-}
+// func initSentry() {
+// 	cfg := config.GetSentry()
+// 	if !cfg.Enabled {
+// 		return
+// 	}
+// 	err := sentry.Init(sentry.ClientOptions{
+// 		Dsn: cfg.DSN,
+// 	})
+// 	if err != nil {
+// 		logger.ErrAttr(err)
+// 	}
+// }

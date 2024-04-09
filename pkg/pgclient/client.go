@@ -1,9 +1,9 @@
-package sqlclient
+package pgclient
 
 import (
 	"time"
 
-	"github.com/ahmadmilzam/ewallet/internal/config"
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -12,27 +12,33 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-type client struct {
-	DB *sqlx.DB
+type Client struct {
+	*sqlx.DB
 }
 
-func (c *client) Close() {
+func (c *Client) Close() {
 	_ = c.DB.Close()
 }
 
-func New() *client {
+func New() (*Client, error) {
 	dbConfig := config.GetDBConfig()
 
 	sqltrace.Register("postgres", &pq.Driver{}, sqltrace.WithDBMPropagation(tracer.DBMPropagationModeFull), sqltrace.WithServiceName("ewallet.db"))
 	db, err := sqlxtrace.Open("postgres", dbConfig.GetConnectionURI(), sqltrace.WithDBMPropagation(tracer.DBMPropagationModeFull))
 
 	if err != nil {
-		logger.Fatalf("failure when opening db connection to: %s err: %v", dbConfig.GetConnectionURI(), err)
+		logger.ErrAttr(err)
 	}
+
 	db.SetMaxIdleConns(dbConfig.Connection.MaxIdleConn)
 	db.SetMaxOpenConns(dbConfig.Connection.MaxOpenConn)
 	lifeTime := time.Second * time.Duration(dbConfig.Connection.MaxLifeTimeConn)
 	db.SetConnMaxLifetime(lifeTime)
 
-	return &client{db}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{DB: db}, nil
 }

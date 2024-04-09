@@ -1,20 +1,20 @@
-APP_EXECUTABLE="bin/ewallet"
+APP_EXECUTABLE="bin/app"
 
 build:
 	mkdir -p bin/
-	go build -o $(APP_EXECUTABLE) cmd/ewallet/main.go
+	go build -o $(APP_EXECUTABLE) cmd/app/main.go
 
 run: build
-	./bin/ewallet start
+	./bin/app start
 
 migrate-create:
-	go run cmd/ewallet/main.go migrate create --filename $(FILENAME)
+	go run cmd/app/main.go migrate create --filename $(FILENAME)
 
 migrate-up:
-	go run cmd/ewallet/main.go migrate up
+	go run cmd/app/main.go migrate up
 
 migrate-down:
-	go run cmd/ewallet/main.go migrate down
+	go run cmd/app/main.go migrate down
 
 test:
 	go test -short -count=1 -race ./...
@@ -24,4 +24,4 @@ static-check:
 	staticcheck ./...
 
 copy-config:
-	cp ./configs/config.yaml.example ./configs/config.yaml
+	cp ./config/config.yaml.example ./config/config.yaml

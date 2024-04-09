@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  cmd = "go build -o ./tmp/ cmd/ewallet/main.go"
+  cmd = "go build -o ./tmp/ cmd/app/main.go"
   bin = "tmp/main"
   full_bin = "APP_ENV=dev APP_USER=air ./tmp/main start"
   poll = true

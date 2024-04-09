@@ -1,60 +1,83 @@
 package logger
 
 import (
+	"context"
 	"fmt"
-
-	"go.uber.org/zap"
+	"io"
+	"log/slog"
+	"runtime"
+	"slices"
 )
 
-var zapLogger *zap.Logger
+// "gitlab.com/flip-id/go-core/middleware/server"
 
-func Init() {
-	zapLogger, _ = zap.NewProduction()
-}
+const (
+	timeFormat       = "2006-01-02T15:04:05.000"
+	maskedString     = "*"
+	correlationIDKey = "correlation_id"
+	sourceKey        = "source"
+	errorKey         = "error"
+)
 
-func getLogger() *zap.Logger {
-	if zapLogger == nil {
-		Init()
+func ParseLevel(level string) slog.Level {
+	logLevel := slog.Level(8)
+	err := logLevel.UnmarshalText([]byte(level))
+	if err != nil {
+		slog.Error("failed to parse log level", ErrAttr(err))
 	}
-	return zapLogger
+	return logLevel
 }
 
-func Debug(msg string) {
-	getLogger().Debug(msg)
+func InitializeLogger(option *Option) {
+	opts := &slog.HandlerOptions{
+		AddSource:   false,
+		Level:       ParseLevel(option.Level),
+		ReplaceAttr: formatTimeAttrFunc(timeFormat),
+	}
+	logger := slog.New(newCustomHandler(option.Writer, opts))
+	slog.SetDefault(logger)
 }
 
-func Debugf(format string, v ...any) {
-	Debug(fmt.Sprintf(format, v...))
+func ErrAttr(err error) slog.Attr {
+	return slog.String(errorKey, err.Error())
 }
 
-func Info(msg string) {
-	getLogger().Info(msg)
+func formatTimeAttrFunc(timeFormat string) func(groups []string, a slog.Attr) slog.Attr {
+	return func(groups []string, a slog.Attr) slog.Attr {
+		if a.Key == slog.TimeKey {
+			a.Value = slog.StringValue(a.Value.Time().Format(timeFormat))
+		}
+		if isSensitiveKey(a.Key) {
+			a.Value = slog.StringValue(maskedString)
+		}
+		return a
+	}
 }
 
-func Infof(format string, v ...any) {
-	Info(fmt.Sprintf(format, v...))
+func isSensitiveKey(key string) bool {
+	sensitiveKeys := []string{"pin", "password", "secret", "token"}
+	return slices.Contains(sensitiveKeys, key)
 }
 
-func Warn(msg string) {
-	getLogger().Warn(msg)
+type customHandler struct {
+	slog.Handler
 }
 
-func Warnf(format string, v ...any) {
-	Warn(fmt.Sprintf(format, v...))
+func newCustomHandler(w io.Writer, opts *slog.HandlerOptions) *customHandler {
+	return &customHandler{
+		slog.NewJSONHandler(w, opts),
+	}
 }
 
-func Error(msg string) {
-	getLogger().Error(msg)
-}
+func (h *customHandler) Handle(ctx context.Context, r slog.Record) error {
+	// if correlationID, ok := ctx.Value(server.CorrelationIDKey).(string); ok {
+	// 	r.AddAttrs(slog.String(correlationIDKey, correlationID))
+	// }
+	if r.Level == slog.LevelError {
+		fs := runtime.CallersFrames([]uintptr{r.PC})
+		f, _ := fs.Next()
+		r.AddAttrs(slog.String(sourceKey, fmt.Sprintf("%s:%d", f.Function, f.Line)))
+	}
 
-func Errorf(format string, v ...any) {
-	Error(fmt.Sprintf(format, v...))
-}
-
-func Fatal(msg string) {
-	getLogger().Fatal(msg)
-}
-
-func Fatalf(format string, v ...any) {
-	Fatal(fmt.Sprintf(format, v...))
+	return h.Handler.Handle(ctx, r)
 }

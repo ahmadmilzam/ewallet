@@ -1,9 +1,31 @@
-# Go Boilerplate
+# Go Ewallet App
 
-Boilerplate for Golang web service.
+A REST API service for ewallet
+
+## How to
+### Start a Live Reload Server
+```
+$ air
+```
+
+### Start a Server
+```
+$ make run
+```
+
+### Create a Migration File
+```
+$ make migrate-create FILENAME=your_migration_name
+```
+
+### Run a Migration UP/DOWN
+```
+$ make migrate-up
+
+$ make migrate-down
+```
 
 ## Features
-
 - [x] Package manager: Go mod
 - [x] Env config: [Viper](https://github.com/spf13/viper)
 - [x] Router: [Gin](https://github.com/gin-gonic/gin)
@@ -12,4 +34,4 @@ Boilerplate for Golang web service.
 - [x] Unit test: [Testify](https://github.com/stretchr/testify)
 - [x] StatsD instrumentation: [Datadog](https://github.com/DataDog/datadog-go)
 - [x] Tracing: [Datadog](https://github.com/DataDog/dd-trace-go)
-- [ ] API Documentation: [Swag](https://github.com/swaggo/swag)
+- [ ] API Documentation: [TBA](https://github.com/)

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -26,17 +27,17 @@ type DatadogConfig struct {
 	Version string `mapstructure:"version"`
 }
 
-type SentryConfig struct {
-	Enabled bool   `mapstructure:"enabled"`
-	DSN     string `mapstructure:"dsn"`
-}
+// type SentryConfig struct {
+// 	Enabled bool   `mapstructure:"enabled"`
+// 	DSN     string `mapstructure:"dsn"`
+// }
 
 type config struct {
-	App      AppConfig     `mapstructure:"app"`
-	StatsD   StatsDConfig  `mapstructure:"statsd"`
-	Datadog  DatadogConfig `mapstructure:"datadog"`
-	Sentry   SentryConfig  `mapstructure:"sentry"`
-	DBConfig DBConfig      `mapstructure:"database"`
+	App     AppConfig     `mapstructure:"app"`
+	StatsD  StatsDConfig  `mapstructure:"statsd"`
+	Datadog DatadogConfig `mapstructure:"datadog"`
+	// Sentry   SentryConfig  `mapstructure:"sentry"`
+	DBConfig DBConfig `mapstructure:"database"`
 }
 
 func Load(cfgName, path string) error {
@@ -44,27 +45,29 @@ func Load(cfgName, path string) error {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	_ = viper.ReadInConfig()
 	return viper.Unmarshal(&c)
 }
 
-func GetServerAddress() string {
-	return fmt.Sprintf("%s:%s", c.App.Address, c.App.Port)
-}
-
-func GetStatsDAddress() string {
-	return fmt.Sprintf("%s:%s", c.StatsD.Host, c.StatsD.Port)
+func GetAppConfig() AppConfig {
+	return c.App
+	// return fmt.Sprintf("%s:%s", c.App.Address, c.App.Port)
 }
 
 func GetDatadogConfig() DatadogConfig {
 	return c.Datadog
 }
 
-func GetSentry() SentryConfig {
-	return c.Sentry
-}
+// func GetSentry() SentryConfig {
+// 	return c.Sentry
+// }
 
 func GetDBConfig() DBConfig {
 	return c.DBConfig
+}
+
+func GetStatsDAddress() string {
+	return fmt.Sprintf("%s:%s", c.StatsD.Host, c.StatsD.Port)
 }
