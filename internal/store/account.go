@@ -65,7 +65,7 @@ func (s *AccountStore) CreateAccountWallet(ctx context.Context, a entity.Account
 		return err
 	}
 
-	err = tx.Get(&mw, `INSERT INTO wallets VALUES($1, $2, $3, $4, $5, &6) RETURNING *`,
+	err = tx.Get(&mw, `INSERT INTO wallets VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
 		w.ID,
 		w.AccountId,
 		w.Balance,
