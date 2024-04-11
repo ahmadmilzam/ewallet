@@ -5,9 +5,9 @@ import (
 )
 
 type HttpResponse struct {
-	Success bool         `json:"success"`
-	Error   ErrorDetails `json:"error,omitempty"`
-	Data    any          `json:"data,omitempty"`
+	Success bool          `json:"success"`
+	Error   *ErrorDetails `json:"error,omitempty"`
+	Data    any           `json:"data,omitempty"`
 }
 
 type ErrorDetails struct {
@@ -18,7 +18,7 @@ type ErrorDetails struct {
 func GenerateErrResponse(e error, m string) HttpResponse {
 	return HttpResponse{
 		Success: false,
-		Error: ErrorDetails{
+		Error: &ErrorDetails{
 			Code:    GetCaseCode(e),
 			Message: m,
 		},
@@ -29,7 +29,7 @@ func GenerateOK(d any) HttpResponse {
 	return HttpResponse{
 		Success: true,
 		Data:    d,
-		Error:   ErrorDetails{},
+		Error:   nil,
 	}
 }
 
