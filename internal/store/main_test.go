@@ -20,8 +20,8 @@ func TestMain(m *testing.M) {
 	}
 
 	testStore = &Store{
-		DB:                sql,
-		AccountQueryStore: NewAccountStore(sql),
+		DB:           sql,
+		AccountQuery: NewAccountStore(sql),
 	}
 
 	os.Exit(m.Run())

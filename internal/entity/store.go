@@ -5,9 +5,25 @@ import (
 	"time"
 )
 
-//go:generate mockery --name AccountSQLStore
-type AccountQueryStore interface {
+//go:generate mockery --name QueryStore
+type QueryStore interface {
+	StoreQuery
+	AccountQuery
+	WalletQuery
+	TransferQuery
+	JournalQuery
+}
+
+type StoreQuery interface {
+	BeginTx(ctx context.Context) error
+	RollbackTx(ctx context.Context) error
+	CommitTx(ctx context.Context) error
+}
+
+//go:generate mockery --name AccountQueryStore
+type AccountQuery interface {
 	CreateAccount(ctx context.Context, model Account) (Account, error)
+	CreateAccountWallet(ctx context.Context, a Account, w Wallet) error
 	UpgradeAccount(ctx context.Context, id string) (Account, error)
 	DeleteAccount(ctx context.Context, id string) error
 	FindAccountById(ctx context.Context, id string) (Account, error)
@@ -26,7 +42,8 @@ type Account struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-type WalletQueryStore interface {
+//go:generate mockery --name WalletQueryStore
+type WalletQuery interface {
 	CreateWallet(ctx context.Context, model Wallet) (Wallet, error)
 	DeleteWallet(ctx context.Context, id string) error
 	FindWallet(ctx context.Context, id string) (Wallet, error)
@@ -36,13 +53,14 @@ type WalletQueryStore interface {
 type Wallet struct {
 	ID        string    `json:"id" db:"id"`
 	AccountId string    `json:"account_id" db:"account_id"`
-	Balance   int64     `json:"balance" db:"balance"`
+	Balance   float64   `json:"balance" db:"balance"`
 	Type      string    `json:"type" db:"type"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-type TransferQueryStore interface {
+//go:generate mockery --name TransferQueryStore
+type TransferQuery interface {
 	CreateTransfer(ctx context.Context, model Transfer) (Transfer, error)
 	UpdateTransfer(ctx context.Context, model Transfer) (Transfer, error)
 	DeleteTransfer(ctx context.Context, id string) error
@@ -60,7 +78,8 @@ type Transfer struct {
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
-type JournalQueryStore interface {
+//go:generate mockery --name JournalQueryStore
+type JournalQuery interface {
 	CreateJournal(ctx context.Context, model Journal) (Journal, error)
 	UpdateJournal(ctx context.Context, model Journal) (Journal, error)
 	DeleteJournal(ctx context.Context, id string) error
@@ -75,8 +94,4 @@ type Journal struct {
 	Amount      float64   `json:"amount" db:"amount"`
 	Reference   string    `json:"reference" db:"reference"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-}
-
-type QueryStore interface {
-	AccountQueryStore
 }

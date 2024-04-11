@@ -38,6 +38,51 @@ func (s *AccountStore) CreateAccount(ctx context.Context, a entity.Account) (ent
 	return ma, nil
 }
 
+func (s *AccountStore) CreateAccountWallet(ctx context.Context, a entity.Account, w entity.Wallet) error {
+	var ma entity.Account
+	var mw entity.Wallet
+	tx, err := s.DB.BeginTxx(ctx, nil)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = nil
+
+	err = tx.Get(&ma, `INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+		a.ID,
+		a.Phone,
+		a.Name,
+		a.Email,
+		a.Role,
+		a.Status,
+		a.CreatedAt,
+		a.UpdatedAt,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Get(&mw, `INSERT INTO wallets VALUES($1, $2, $3, $4, $5, &6) RETURNING *`,
+		w.ID,
+		w.AccountId,
+		w.Balance,
+		w.Type,
+		w.CreatedAt,
+		w.UpdatedAt,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
 func (s *AccountStore) UpgradeAccount(ctx context.Context, id string) (entity.Account, error) {
 	var ac entity.Account
 	err := s.DB.GetContext(ctx, &ac, `UPDATE accounts SET status = 'PREMIUM' WHERE id = $1 RETURNING *`, id)

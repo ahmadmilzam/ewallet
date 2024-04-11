@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
@@ -28,8 +29,9 @@ func NewStore() (*Store, error) {
 	}
 
 	return &Store{
-		DB:                sql,
-		AccountQueryStore: NewAccountStore(sql),
+		DB:           sql,
+		Tx:           nil,
+		AccountQuery: NewAccountStore(sql),
 	}, nil
 
 	// alt version
@@ -39,23 +41,32 @@ func NewStore() (*Store, error) {
 }
 
 type Store struct {
-	DB                       *sqlx.DB
-	entity.AccountQueryStore // TODO: add another store here and in model.Store interface
+	*sqlx.DB
+	*sqlx.Tx
+	entity.AccountQuery
+	entity.WalletQuery
+	entity.JournalQuery
+	entity.TransferQuery // TODO: add another store here and in model.Store interface
 }
 
-func (s *Store) BeginTx(ctx context.Context) context.Context {
-	tx, _ := s.DB.DB.Begin()
-	ctx = context.WithValue(ctx, Tx, tx)
-	return ctx
+func (s *Store) BeginTx(ctx context.Context) error {
+	tx, err := s.DB.BeginTxx(ctx, nil)
+	if err != nil {
+		//log errors with context
+		slog.Error("fail to begin tx", "error", err)
+		return err
+	}
+	s.Tx = tx
+	return nil
 }
 
 func (s *Store) CommitTx(ctx context.Context) error {
-	tx, ok := ctx.Value(Tx).(*sql.Tx)
-	if !ok {
-		return errors.New("failed to commit on non transaction mode")
+	err := s.Tx.Commit()
+	if err != nil {
+		//log errors with context
+		slog.Error("fail to commit tx", "error", err)
 	}
-
-	return tx.Commit()
+	return err
 }
 
 func (s *Store) RollbackTx(ctx context.Context) error {

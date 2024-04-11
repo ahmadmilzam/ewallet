@@ -50,7 +50,3 @@ CREATE INDEX ON "journals" ("src_wallet_id", "dst_wallet_id");
 CREATE INDEX ON "transfers" ("wallet_id");
 
 CREATE INDEX ON "transfers" ("wallet_id", "created_at");
-
-COMMENT ON COLUMN "transfers"."credit_amount" IS 'must be positive';
-
-COMMENT ON COLUMN "transfers"."debit_amount" IS 'must be positive';

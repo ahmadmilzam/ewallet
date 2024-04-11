@@ -2,16 +2,17 @@ package usecase
 
 import (
 	"context"
-	"math/rand"
-	"strconv"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 	"github.com/ahmadmilzam/ewallet/pkg/uuid"
 )
 
 type AccountUsecaseInterface interface {
-	CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, error)
+	CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
 	GetAccount(ctx context.Context, phone string) (entity.Account, error)
 	// ListBlogs(ctx context.Context, args ListBlogsParams) (*ListBlogsResponse, error)
 }
@@ -26,47 +27,68 @@ func NewAccountUsecase(store entity.QueryStore) AccountUsecaseInterface {
 	}
 }
 
-func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, error) {
+func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
+
+	aID := uuid.New().String()
+	wID := uuid.New().String()
+	cAt := time.Now()
+	uAt := time.Now()
 
 	ac := entity.Account{
-		ID:        uuid.New().String(),
+		ID:        aID,
 		Name:      params.Name,
 		Phone:     params.Phone,
 		Email:     params.Email,
 		Role:      "REGISTERED",
 		Status:    "ACTIVE",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: cAt,
+		UpdatedAt: uAt,
 	}
 
-	ac, err := usecase.store.CreateAccount(ctx, ac)
+	wl := entity.Wallet{
+		ID:        wID,
+		AccountId: aID,
+		Balance:   0.00,
+		Type:      "CASH",
+		CreatedAt: cAt,
+		UpdatedAt: uAt,
+	}
+
+	err := usecase.store.CreateAccountWallet(ctx, ac, wl)
+
 	if err != nil {
-		return entity.Account{}, err
+		return entity.Account{}, entity.Wallet{}, err
 	}
 
-	return ac, nil
+	return ac, wl, nil
 }
 
 func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (entity.Account, error) {
-
 	ac, err := usecase.store.FindAccountByPhone(ctx, phone)
+
+	if err != nil && !strings.Contains(err.Error(), "no rows in result set") {
+		err = fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
+		return entity.Account{}, err
+	}
+
 	if err != nil {
+		err = fmt.Errorf("%s: %w", httpres.GenericNotFound, err)
 		return entity.Account{}, err
 	}
 
 	return ac, nil
 }
 
-func (usecase *AccountUsecase) generateCorrelationId(max int) string {
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
+// func (usecase *AccountUsecase) generateCorrelationId(max int) string {
+// 	source := rand.NewSource(time.Now().UnixNano())
+// 	r := rand.New(source)
 
-	tNow := time.Now().UnixNano()
+// 	tNow := time.Now().UnixNano()
 
-	random := r.Intn(max)
-	return strconv.Itoa(int(tNow)) + strconv.Itoa(random)
+// 	random := r.Intn(max)
+// 	return strconv.Itoa(int(tNow)) + strconv.Itoa(random)
 
-}
+// }
 
 // func (usecase *AccountUsecase) CreateBlog(ctx context.Context, body string) (entity.Account, error) {
 

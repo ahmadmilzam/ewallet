@@ -2,11 +2,13 @@ package v1
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/ahmadmilzam/ewallet/internal/utils"
+	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,70 +25,75 @@ func NewAccountRoute(handler *gin.RouterGroup, u usecase.AccountUsecaseInterface
 	}
 }
 
+type waResponse struct {
+	Account entity.Account `json:"account_detail"`
+	Wallet  entity.Wallet  `json:"wallet_detail"`
+}
+
 func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	var params usecase.CreateAccountReqParams
 	c := context.Background()
 
 	if err := ctx.ShouldBindJSON(&params); err != nil {
-		slog.Error("unprocessable data", "error", err)
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse{
-			Success: false,
-			Error: utils.ErrorStruct{
-				Code:    "40001",
-				Message: "Unprocessable data",
-			},
-		})
+		slog.Error("Fail to parse", "error", err)
+		ctx.JSON(
+			http.StatusBadRequest,
+			httpres.GenerateErrResponse(err, "Fail to parse request"),
+		)
 		return
 	}
 
-	account, err := route.usecase.CreateAccount(c, params)
+	a, w, err := route.usecase.CreateAccount(c, params)
 
 	if err != nil {
-		slog.Error("fail to create account", "error", err)
-		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse{
-			Success: false,
-			Error: utils.ErrorStruct{
-				Code:    "50001",
-				Message: "Fail to store data",
-			},
-		})
+		slog.Error("Fail to create account", "error", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, "Fail to create account"),
+		)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, SuccessResponse{
-		Success: true,
-		Data:    account,
-	})
+	ctx.JSON(httpres.GetStatusCode(err), httpres.GenerateOK(waResponse{
+		Account: a,
+		Wallet:  w,
+	}))
 }
 
 func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	var req usecase.GetAccountReqParams
 	c := context.Background()
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		slog.Error("bad request", "param", ctx.Param("phone"), "error", err)
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse{
-			Success: false,
-			Error: utils.ErrorStruct{
-				Code:    "40000",
-				Message: "Unprocessable data",
-			},
-		})
+		err = fmt.Errorf("%s: %w", httpres.GenericBadRequest, err)
+
+		ctx.Set("msg", "Fail to parse request data")
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, "Fail to parse request"),
+		)
 		return
 	}
 
 	account, err := route.usecase.GetAccount(c, req.Phone)
 
 	if err != nil {
-		slog.Error("Unable to get account", "error", err)
-		ctx.JSON(http.StatusNotFound, utils.ErrorResponse{
-			Success: false,
-			Error: utils.ErrorStruct{
-				Code:    "40400",
-				Message: "Account not found",
-			},
-		})
+		var msg string
+		sc := httpres.GetStatusCode(err)
+		if sc >= 500 {
+			msg = "Internal server error"
+		} else {
+			msg = "Account not found"
+		}
+
+		ctx.Set("msg", "Unable to get account")
+		ctx.Set("err", err)
+		ctx.JSON(
+			sc,
+			httpres.GenerateErrResponse(err, msg),
+		)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, account)
+	ctx.JSON(http.StatusOK, httpres.GenerateOK(account))
 }
