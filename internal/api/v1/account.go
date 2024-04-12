@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -38,7 +39,7 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 		slog.Error("Fail to parse", "error", err)
 		ctx.JSON(
 			http.StatusBadRequest,
-			httpres.GenerateErrResponse(err, "Fail to parse request"),
+			httpres.GenerateErrResponse(errors.New("40000_fail to parse request"), "Fail to parse request"),
 		)
 		return
 	}

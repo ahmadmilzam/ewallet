@@ -10,11 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(router *gin.Engine, u usecase.UsecaseOperations) {
-	// Options -.
-	// gin.SetMode(gin.DebugMode)
-	// router.Use(gin.Logger())
-	// router.Use(gin.Recovery())
+func NewRouter(router *gin.Engine, u usecase.AppUsecaseInterface) {
 	router.HandleMethodNotAllowed = true
 	// K8s probe for kubernetes health checks -.
 	router.GET("/health", func(c *gin.Context) {
@@ -25,7 +21,7 @@ func NewRouter(router *gin.Engine, u usecase.UsecaseOperations) {
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(
 			http.StatusNotFound,
-			httpres.GenerateErrResponse(errors.New("NOT_FOUND"), "Endpoint not found"),
+			httpres.GenerateErrResponse(errors.New("40400_Endpoint not found"), "Endpoint not found"),
 		)
 	})
 
