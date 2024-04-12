@@ -1,6 +1,6 @@
 CREATE TABLE "wallets" (
   "id" varchar PRIMARY KEY,
-  "account_id" varchar NOT NULL,
+  "account_phone" varchar NOT NULL,
   "balance" numeric(22, 2) NOT NULL,
   "type" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
@@ -8,8 +8,7 @@ CREATE TABLE "wallets" (
 );
 
 CREATE TABLE "accounts" (
-  "id" varchar PRIMARY KEY,
-  "phone" varchar UNIQUE NOT NULL,
+  "phone" varchar PRIMARY KEY,
   "name" varchar NOT NULL,
   "email" varchar NOT NULL,
   "role" varchar NOT NULL,
@@ -37,9 +36,9 @@ CREATE TABLE "transfers" (
   "journal_id" varchar NOT NULL
 );
 
-CREATE INDEX ON "wallets" ("account_id");
+CREATE INDEX ON "wallets" ("account_phone");
 
-CREATE INDEX ON "wallets" ("account_id", "type");
+CREATE INDEX ON "wallets" ("account_phone", "type");
 
 CREATE INDEX ON "journals" ("src_wallet_id");
 

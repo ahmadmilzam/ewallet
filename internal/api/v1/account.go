@@ -10,6 +10,7 @@ import (
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/httpres"
+	"github.com/dongri/phonenumber"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,16 +57,19 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(httpres.GetStatusCode(err), httpres.GenerateOK(waResponse{
-		Account: a,
-		Wallet:  w,
+		Account: *a,
+		Wallet:  *w,
 	}))
 }
 
 func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	var req usecase.GetAccountReqParams
 	c := context.Background()
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		err = fmt.Errorf("%s: %w", httpres.GenericBadRequest, err)
+	phone := phonenumber.Parse(ctx.Param("phone"), "ID")
+
+	if phone == "" {
+		er := errors.New("bad param phone")
+		err := fmt.Errorf("%s: %w", httpres.GenericBadRequest, er)
 
 		ctx.Set("msg", "Fail to parse request data")
 		ctx.Set("err", err)

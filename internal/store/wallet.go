@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Queries) CreateWallet(ctx context.Context, w entity.Wallet) (*entity.Wallet, error) {
-	_, err := s.db.Exec(`INSERT INTO accounts VALUES($1, $2, $3, $4, $5, $6)`,
+	_, err := s.db.Exec(`INSERT INTO wallets VALUES($1, $2, $3, $4, $5, $6)`,
 		w.ID,
 		w.AccountId,
 		w.Balance,

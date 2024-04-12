@@ -12,11 +12,11 @@ import (
 )
 
 type AccountUsecaseInterface interface {
-	CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
-	GetAccount(ctx context.Context, phone string) (entity.Account, error)
+	CreateAccount(ctx context.Context, params CreateAccountReqParams) (*entity.Account, *entity.Wallet, error)
+	GetAccount(ctx context.Context, phone string) (*entity.Account, error)
 }
 
-func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
+func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (*entity.Account, *entity.Wallet, error) {
 
 	aID := uuid.New().String()
 	wID := uuid.New().String()
@@ -46,26 +46,26 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountReqP
 	err := u.store.CreateAccountTx(ctx, ac, wl)
 
 	if err != nil {
-		return entity.Account{}, entity.Wallet{}, err
+		return nil, nil, err
 	}
 
-	return ac, wl, nil
+	return &ac, &wl, nil
 }
 
-func (u *AppUsecase) GetAccount(ctx context.Context, phone string) (entity.Account, error) {
+func (u *AppUsecase) GetAccount(ctx context.Context, phone string) (*entity.Account, error) {
 	ac, err := u.store.FindAccountByPhone(ctx, phone)
 
 	if err != nil && !strings.Contains(err.Error(), "no rows in result set") {
 		err = fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
-		return entity.Account{}, err
+		return nil, err
 	}
 
 	if err != nil {
 		err = fmt.Errorf("%s: %w", httpres.GenericNotFound, err)
-		return entity.Account{}, err
+		return nil, err
 	}
 
-	return ac, nil
+	return &ac, nil
 }
 
 // func generateCorrelationId(max int) string {

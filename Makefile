@@ -17,7 +17,7 @@ migrate-down:
 	go run cmd/app/main.go migrate down
 
 test:
-	go test -short -count=1 -race ./...
+	go test ./...
 
 static-check:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
