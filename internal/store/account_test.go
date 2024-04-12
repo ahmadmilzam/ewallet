@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateAccount(t *testing.T) {
+func TestCreateAccountTx(t *testing.T) {
 	d := utils.RandomAccountData(entity.Account{})
 	w := entity.Wallet{
 		ID:        uuid.New().String(),
@@ -21,7 +21,7 @@ func TestCreateAccount(t *testing.T) {
 		UpdatedAt: d.UpdatedAt,
 	}
 
-	err := testStore.CreateAccountWallet(context.Background(), d, w)
+	err := testStore.CreateAccountTx(context.Background(), d, w)
 
 	require.NoError(t, err)
 	// fmt.Println(ar, wr)

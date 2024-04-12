@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(router *gin.Engine, u usecase.AccountUsecaseInterface) {
+func NewRouter(router *gin.Engine, u usecase.UsecaseOperations) {
 	// Options -.
 	// gin.SetMode(gin.DebugMode)
 	// router.Use(gin.Logger())
@@ -33,5 +33,6 @@ func NewRouter(router *gin.Engine, u usecase.AccountUsecaseInterface) {
 	rgroupv1 := router.Group("/v1")
 	{
 		v1.NewAccountRoute(rgroupv1, u)
+		v1.NewWalletRoute(rgroupv1, u)
 	}
 }

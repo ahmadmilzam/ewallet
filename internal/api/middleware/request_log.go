@@ -24,7 +24,7 @@ func RequestLog() Middleware {
 		if !err_exist {
 			err = ""
 		}
-		fmt.Println(msg_exist, err_exist)
+		fmt.Println("request_log check context value", msg_exist, err_exist)
 
 		// access the status we are sending
 		status := ctx.Writer.Status()

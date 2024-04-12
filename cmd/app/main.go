@@ -26,20 +26,16 @@ const (
 )
 
 func main() {
+	var err error
 
 	cliApp := &cli.App{}
 
 	_ = config.Load("config", "./config")
-
 	appConfig := config.GetAppConfig()
 	dbConfig := config.GetDBConfig()
 	migrate := migration.CreateMigrate(dbConfig.Name)
 
-	pgstore, err := store.NewStore()
-
-	if err != nil {
-		panic(err)
-	}
+	pgstore := store.NewStore()
 
 	// logger.Init()
 	logger.InitializeLogger(logger.NewOption(logger.WithLevel("debug")))
@@ -47,7 +43,7 @@ func main() {
 	trace.Init()
 	defer trace.Stop()
 
-	accountUsecase := usecase.NewAccountUsecase(pgstore)
+	appUsecase := usecase.NewAppUsecase(pgstore)
 
 	// Passing also the basic auth middleware to all  Routers -.
 
@@ -58,9 +54,8 @@ func main() {
 			Action: func(c *cli.Context) error {
 				handler := gin.New()
 				handler.Use(middleware.RequestLog())
-				// handler.Use(gin.CustomRecovery(middleware.ErrorHandler))
 				handler.Use(gin.Recovery())
-				api.NewRouter(handler, accountUsecase)
+				api.NewRouter(handler, appUsecase)
 
 				httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))
 				httpServer.Start()

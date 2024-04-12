@@ -2,10 +2,6 @@ package store
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"fmt"
-	"log/slog"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
@@ -13,69 +9,44 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type contextProp string
+type TransferTxParams struct {
+	FromAccountID int64 `json:"src_account_id"`
+	ToAccountID   int64 `json:"dst_account_id"`
+	Amount        int64 `json:"amount"`
+}
 
-const (
-	Tx contextProp = "tx"
-)
+// TransferTxResult is the result of the transfer transaction
+type TransferTxResult struct {
+	Journal     entity.Journal  `json:"journal"`
+	FromAccount entity.Account  `json:"src_account"`
+	ToAccount   entity.Account  `json:"dst_account"`
+	SrcTransfer entity.Transfer `json:"src_transfer"`
+	DstTransfer entity.Transfer `json:"dst_transfer"`
+}
 
-func NewStore() (*Store, error) {
+type Store interface {
+	entity.StoreQuerier
+	CreateAccountTx(ctx context.Context, a entity.Account, w entity.Wallet) error
+}
+
+// SQLStore provides all functions to execute SQL queries and transactions
+type SQLStore struct {
+	*sqlx.DB
+	*Queries
+}
+
+// NewStore creates a new store
+func NewStore() Store {
 	sql := pgclient.New()
 
-	// defer sql.DB.Close()
-
-	if err := sql.DB.Ping(); err != nil {
-		return nil, fmt.Errorf("error pinging database: %w", err)
+	return &SQLStore{
+		DB:      sql,
+		Queries: NewQueries(sql),
 	}
-
-	return &Store{
-		DB:           sql,
-		Tx:           nil,
-		AccountQuery: NewAccountStore(sql),
-	}, nil
-
 	// alt version
 	// return &Store{
 	// 	AccountStore: &AccountStore{DB: db},
 	// }, nil
-}
-
-type Store struct {
-	*sqlx.DB
-	*sqlx.Tx
-	entity.AccountQuery
-	entity.WalletQuery
-	entity.JournalQuery
-	entity.TransferQuery // TODO: add another store here and in model.Store interface
-}
-
-func (s *Store) BeginTx(ctx context.Context) error {
-	tx, err := s.DB.BeginTxx(ctx, nil)
-	if err != nil {
-		//log errors with context
-		slog.Error("fail to begin tx", "error", err)
-		return err
-	}
-	s.Tx = tx
-	return nil
-}
-
-func (s *Store) CommitTx(ctx context.Context) error {
-	err := s.Tx.Commit()
-	if err != nil {
-		//log errors with context
-		slog.Error("fail to commit tx", "error", err)
-	}
-	return err
-}
-
-func (s *Store) RollbackTx(ctx context.Context) error {
-	tx, ok := ctx.Value(Tx).(*sql.Tx)
-	if !ok {
-		return errors.New("failed to rollback on non transaction mode")
-	}
-	tx.Rollback()
-	return nil
 }
 
 // alt version

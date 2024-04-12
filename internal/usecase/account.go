@@ -14,20 +14,9 @@ import (
 type AccountUsecaseInterface interface {
 	CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
 	GetAccount(ctx context.Context, phone string) (entity.Account, error)
-	// ListBlogs(ctx context.Context, args ListBlogsParams) (*ListBlogsResponse, error)
 }
 
-type AccountUsecase struct {
-	store entity.QueryStore
-}
-
-func NewAccountUsecase(store entity.QueryStore) AccountUsecaseInterface {
-	return &AccountUsecase{
-		store: store,
-	}
-}
-
-func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
+func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
 
 	aID := uuid.New().String()
 	wID := uuid.New().String()
@@ -54,7 +43,7 @@ func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateA
 		UpdatedAt: uAt,
 	}
 
-	err := usecase.store.CreateAccountWallet(ctx, ac, wl)
+	err := u.store.CreateAccountTx(ctx, ac, wl)
 
 	if err != nil {
 		return entity.Account{}, entity.Wallet{}, err
@@ -63,8 +52,8 @@ func (usecase *AccountUsecase) CreateAccount(ctx context.Context, params CreateA
 	return ac, wl, nil
 }
 
-func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (entity.Account, error) {
-	ac, err := usecase.store.FindAccountByPhone(ctx, phone)
+func (u *AppUsecase) GetAccount(ctx context.Context, phone string) (entity.Account, error) {
+	ac, err := u.store.FindAccountByPhone(ctx, phone)
 
 	if err != nil && !strings.Contains(err.Error(), "no rows in result set") {
 		err = fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
@@ -79,7 +68,7 @@ func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (en
 	return ac, nil
 }
 
-// func (usecase *AccountUsecase) generateCorrelationId(max int) string {
+// func generateCorrelationId(max int) string {
 // 	source := rand.NewSource(time.Now().UnixNano())
 // 	r := rand.New(source)
 
@@ -88,50 +77,4 @@ func (usecase *AccountUsecase) GetAccount(ctx context.Context, phone string) (en
 // 	random := r.Intn(max)
 // 	return strconv.Itoa(int(tNow)) + strconv.Itoa(random)
 
-// }
-
-// func (usecase *AccountUsecase) CreateBlog(ctx context.Context, body string) (entity.Account, error) {
-
-// 	blog, err := usecase.store.CreateBlog(ctx, sql.NullString{String: description, Valid: true})
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("AccountUsecase - uc.usecase.CreateBlog.: %w", err)
-// 	}
-
-// 	return &blog, nil
-// }
-
-// // ListBlogs -.
-// func (usecase *AccountUsecase) ListBlogs(ctx context.Context, args intfaces.ListBlogsParams) (*intfaces.ListBlogsResponse, error) {
-
-// 	page, err := utils.StringToInt32(args.Page)
-
-// 	if err != nil {
-// 		return nil, errors.New("enter a valid type for the pageId query parameter")
-// 	}
-
-// 	limit, err := utils.StringToInt32(args.Limit)
-
-// 	if err != nil {
-// 		return nil, errors.New("enter a valid type for the pageSize query parameter")
-// 	}
-
-// 	Limit, Offset := utils.PaginatorParams(page, limit)
-
-// 	blogs, err := usecase.store.ListBlog(ctx, sqlc.ListBlogParams{
-// 		Limit:  Limit,
-// 		Offset: Offset,
-// 	})
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("AccountUsecase - bank - uc.usecase.ListBlogs: %w", err)
-// 	}
-
-// 	nextPage, previousPage := utils.PaginatorPages(ctx, page, limit, len(blogs))
-
-// 	return &intfaces.ListBlogsResponse{Blog: blogs, NextPage: nextPage, PreviousPage: previousPage}, nil
-// }
-
-// func CreateAccount(payload *AccountPayload) *Account {
-// 	return
 // }

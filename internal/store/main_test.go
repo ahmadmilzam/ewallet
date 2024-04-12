@@ -9,7 +9,7 @@ import (
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
 )
 
-var testStore *Store
+var testStore *SQLStore
 
 func TestMain(m *testing.M) {
 	_ = config.Load("config", "../../config")
@@ -19,9 +19,9 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot ping db: ", err)
 	}
 
-	testStore = &Store{
-		DB:           sql,
-		AccountQuery: NewAccountStore(sql),
+	testStore = &SQLStore{
+		DB:      sql,
+		Queries: NewQueries(sql),
 	}
 
 	os.Exit(m.Run())
