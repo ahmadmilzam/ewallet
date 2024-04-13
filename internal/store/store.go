@@ -1,8 +1,6 @@
 package store
 
 import (
-	"context"
-
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
 	"github.com/jmoiron/sqlx"
@@ -26,7 +24,6 @@ type TransferTxResult struct {
 
 type Store interface {
 	entity.StoreQuerier
-	CreateAccountTx(ctx context.Context, a entity.Account, w entity.Wallet) error
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions

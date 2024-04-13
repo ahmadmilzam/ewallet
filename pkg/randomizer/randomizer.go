@@ -1,4 +1,4 @@
-package utils
+package randomizer
 
 import (
 	// "math/rand"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/dongri/phonenumber"
 	"github.com/go-faker/faker/v4"
 )
 
@@ -52,18 +51,13 @@ func CustomGenerator() {
 	})
 }
 
-func RandomAccountData(a entity.Account) entity.Account {
+func RandomAccountData(a *entity.Account) error {
 	CustomGenerator()
 
-	err := faker.FakeData(&a)
+	err := faker.FakeData(a)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	faker.ResetUnique()
-	return a
-}
-
-func ParsePhoneNumber() {
-	number := phonenumber.Parse("081284026291", "ID")
-	fmt.Println(number)
+	return nil
 }

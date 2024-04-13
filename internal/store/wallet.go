@@ -7,21 +7,18 @@ import (
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 )
 
-func (s *Queries) CreateWallet(ctx context.Context, w entity.Wallet) (*entity.Wallet, error) {
-	_, err := s.db.Exec(`INSERT INTO wallets VALUES($1, $2, $3, $4, $5, $6)`,
-		w.ID,
-		w.AccountId,
-		w.Balance,
-		w.Type,
-		w.CreatedAt,
-		w.UpdatedAt,
-	)
+var (
+	CreateWalletSQL = `INSERT INTO wallets VALUES(:id, :account_phone, :balance, :type, :created_at, :updated_at)`
+)
+
+func (s *Queries) CreateWallet(ctx context.Context, w *entity.Wallet) (*entity.Wallet, error) {
+	_, err := s.db.NamedExecContext(ctx, CreateWalletSQL, w)
 
 	if err != nil {
 		return nil, fmt.Errorf("error creating wallet: %w", err)
 	}
 
-	return &w, nil
+	return w, nil
 }
 
 func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet, error) {
@@ -35,13 +32,24 @@ func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet
 	return &mw, nil
 }
 
-func (s *Queries) FindWalletsByAccount(ctx context.Context, aid string) ([]entity.Wallet, error) {
+func (s *Queries) FindWalletsByPhone(ctx context.Context, p string) ([]entity.Wallet, error) {
 	var amw []entity.Wallet
 
-	err := s.db.SelectContext(ctx, &amw, `SELECT * FROM wallets WHERE account_id=$1`, aid)
+	err := s.db.SelectContext(ctx, &amw, `SELECT * FROM wallets WHERE account_phone=$1`, p)
 	if err != nil {
-		return []entity.Wallet{}, fmt.Errorf("error getting wallets: %w", err)
+		return nil, fmt.Errorf("error getting wallets: %w", err)
 	}
 
 	return amw, nil
+}
+
+func (s *Queries) FindWalletsByPhoneAndType(ctx context.Context, p string, t string) (*entity.Wallet, error) {
+	var w entity.Wallet
+
+	err := s.db.SelectContext(ctx, &w, `SELECT * FROM wallets WHERE account_phone=$1 AND type=$2`, p, t)
+	if err != nil {
+		return nil, fmt.Errorf("error getting wallets: %w", err)
+	}
+
+	return &w, nil
 }

@@ -21,7 +21,7 @@ func NewRouter(router *gin.Engine, u usecase.AppUsecaseInterface) {
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(
 			http.StatusNotFound,
-			httpres.GenerateErrResponse(errors.New("40400_Endpoint not found"), "Endpoint not found"),
+			httpres.GenerateErrResponse(errors.New("40400: Endpoint not found"), "Endpoint not found"),
 		)
 	})
 

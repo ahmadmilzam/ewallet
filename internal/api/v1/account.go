@@ -10,7 +10,6 @@ import (
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/httpres"
-	"github.com/dongri/phonenumber"
 	"github.com/gin-gonic/gin"
 )
 
@@ -65,9 +64,8 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	var req usecase.GetAccountReqParams
 	c := context.Background()
-	phone := phonenumber.Parse(ctx.Param("phone"), "ID")
-
-	if phone == "" {
+	// phone := phonenumber.Parse(ctx.Param("phone"), "ID")
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		er := errors.New("bad param phone")
 		err := fmt.Errorf("%s: %w", httpres.GenericBadRequest, er)
 
@@ -79,6 +77,8 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 		)
 		return
 	}
+
+	fmt.Println("handler/phone: ", req.Phone)
 
 	account, err := route.usecase.GetAccount(c, req.Phone)
 
