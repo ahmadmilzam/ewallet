@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/lib/pq"
 )
 
 const (
@@ -33,7 +34,7 @@ const (
 		a.created_at,
 		a.updated_at,
 		w.type,
-		w.balance,
+		w.balance
 	FROM
 		accounts a
 	JOIN wallets AS w ON a.phone = w.account_phone
@@ -42,6 +43,15 @@ const (
 
 func (s *Queries) CreateAccount(ctx context.Context, a *entity.Account) (*entity.Account, error) {
 	_, err := s.db.NamedExecContext(ctx, createAccountSQL, a)
+	if err, ok := err.(*pq.Error); ok {
+		// Here err is of type *pq.Error, you may inspect all its fields, e.g.:
+		fmt.Println("pq error:", err)
+		fmt.Println("pq error:", err.Code.Name())
+		/*
+			pq error: pq: duplicate key value violates unique constraint "accounts_pkey"
+			pq error: unique_violation
+		*/
+	}
 	if err != nil {
 		err = fmt.Errorf("CreateAccount: %w", err)
 		return nil, err
@@ -127,28 +137,10 @@ func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Ac
 
 func (s *Queries) FindAccountAndWalletsById(ctx context.Context, p string) ([]entity.AccountWallet, error) {
 	var aaw []entity.AccountWallet
-	// var aw entity.AccountWallets
 
-	const q = `
-		SELECT
-			a.phone,
-			a.name,
-			a.email,
-			a.role,
-			a.status,
-			a.created_at,
-			a.updated_at,
-			w.type,
-			w.balance,
-		FROM
-			accounts a
-		JOIN wallets AS w ON a.phone = w.account_phone
-		WHERE
-		a.phone = $1
-	`
-	err := s.db.SelectContext(ctx, &aaw, q, p)
+	err := s.db.SelectContext(ctx, &aaw, findAccountAndWalletsByIdSQL, p)
 	if err != nil {
-		err = fmt.Errorf("FindAccountAndWalletsByPhone: %w", err)
+		err = fmt.Errorf("FindAccountAndWalletsById: %w", err)
 		return nil, err
 	}
 

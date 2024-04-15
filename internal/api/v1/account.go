@@ -30,28 +30,25 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&params); err != nil {
 		err = fmt.Errorf("%s: r.createAccount: %w", httpres.GenericBadRequest, err)
-
-		ctx.Set("msg", "Fail to parse request data")
+		msg := "Fail to parse request data"
+		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(
 			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, "Fail to parse request"),
+			httpres.GenerateErrResponse(err, msg),
 		)
 		return
 	}
 
-	fmt.Println("Req payload parsed")
-	fmt.Println("Begin calling u.CreateAccount")
 	aw, err := route.usecase.CreateAccount(c, params)
-	fmt.Println("Finished called u.CreateAccount")
-	fmt.Println("AW Res: ", aw)
 
 	if err != nil {
-		ctx.Set("msg", "Fail to create account")
+		msg := "Fail to create account"
+		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(
 			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, "Fail to create account"),
+			httpres.GenerateErrResponse(err, msg),
 		)
 		return
 	}
@@ -66,12 +63,12 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		er := errors.New("bad param phone")
 		err := fmt.Errorf("%s: r.getAccount: %w", httpres.GenericBadRequest, er)
-
-		ctx.Set("msg", "Fail to parse request data")
+		msg := "Fail to parse request data"
+		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(
 			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, "Fail to parse request"),
+			httpres.GenerateErrResponse(err, msg),
 		)
 		return
 	}
@@ -87,7 +84,7 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 			msg = "Account not found"
 		}
 
-		ctx.Set("msg", "Unable to get account")
+		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(
 			sc,

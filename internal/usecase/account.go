@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -71,8 +72,18 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams
 		}
 		return nil, err
 	}
+	wsc := entity.WalletSummary{
+		Type:    wc.Type,
+		Balance: wc.Balance,
+	}
+	wsp := entity.WalletSummary{
+		Type:    wp.Type,
+		Balance: wp.Balance,
+	}
+	ws := []entity.WalletSummary{}
+	ws = append(ws, wsc, wsp)
 
-	awr := mapCreateAccountResponse(a, ww)
+	awr := mapCreateAccountResponse(a, ws)
 
 	return awr, nil
 }
@@ -83,8 +94,12 @@ func (u *AppUsecase) GetAccount(ctx context.Context, p string) (*AccountWalletsR
 	aac, err := u.store.FindAccountAndWalletsById(ctx, p)
 
 	if err != nil {
-		wErr = u.wrapNotFoundErr(err)
-		return nil, wErr
+		return nil, fmt.Errorf("%s: GetAccount: %w", httpres.GenericInternalError, err)
+	}
+
+	if len(aac) == 0 {
+		wErr = errors.New("no rows in result set")
+		return nil, fmt.Errorf("%s: GetAccount: FindAccountAndWalletsById: %w", httpres.GenericNotFound, wErr)
 	}
 
 	awr := formatFindAccountAndWalletsByPhone(aac)
@@ -93,6 +108,7 @@ func (u *AppUsecase) GetAccount(ctx context.Context, p string) (*AccountWalletsR
 }
 
 func formatFindAccountAndWalletsByPhone(feeder []entity.AccountWallet) *AccountWalletsResBody {
+	fmt.Println("feeder", feeder)
 	a := &entity.Account{
 		Phone:     feeder[0].Phone,
 		Name:      feeder[0].Name,
@@ -103,10 +119,10 @@ func formatFindAccountAndWalletsByPhone(feeder []entity.AccountWallet) *AccountW
 		UpdatedAt: feeder[0].UpdatedAt,
 	}
 
-	ww := []entity.Wallet{}
+	ww := []entity.WalletSummary{}
 
 	for _, v := range feeder {
-		ww = append(ww, entity.Wallet{
+		ww = append(ww, entity.WalletSummary{
 			Type:    v.Type,
 			Balance: v.Balance,
 		})
@@ -116,7 +132,7 @@ func formatFindAccountAndWalletsByPhone(feeder []entity.AccountWallet) *AccountW
 	return res
 }
 
-func mapCreateAccountResponse(a *entity.Account, ww []entity.Wallet) *AccountWalletsResBody {
+func mapCreateAccountResponse(a *entity.Account, ww []entity.WalletSummary) *AccountWalletsResBody {
 
 	tz := a.CreatedAt.Local().Format(time.RFC3339)
 	res := &AccountWalletsResBody{}
