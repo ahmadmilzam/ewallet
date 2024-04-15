@@ -16,4 +16,16 @@ datadog:
   env: 'staging'
   service: 'ewallet'
   version: '0.0.1'
-
+transfer:
+  unregistered:
+    balance_limit: 1000000
+    daily_count_limit: 2
+    monthly_count_limit: 10
+    daily_amount_limit: 2000000
+    monthly_amount_limit: 10000000
+  registered:
+    balance_limit: 10000000
+    daily_count_limit: 10
+    monthly_count_limit: 20
+    daily_amount_limit: 20000000
+    monthly_amount_limit: 40000000
