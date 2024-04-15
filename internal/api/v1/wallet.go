@@ -26,9 +26,9 @@ func NewWalletRoute(handler *gin.RouterGroup, u usecase.WalletUsecaseInterface) 
 func (route *WalletRoute) getWallet(ctx *gin.Context) {
 	c := context.Background()
 	id := ctx.Param("id")
-	fmt.Println("id", id)
+
 	if err := ctx.ShouldBindUri(&id); err != nil {
-		err = fmt.Errorf("%s: %w", httpres.GenericBadRequest, err)
+		err = fmt.Errorf("%s: getWallet: %w", httpres.GenericBadRequest, err)
 
 		ctx.Set("msg", "Fail to parse request data")
 		ctx.Set("err", err)

@@ -1,6 +1,7 @@
 package httpres
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -26,11 +27,14 @@ func GenerateErrResponse(e error, m string) HttpResponse {
 }
 
 func GenerateOK(d any) HttpResponse {
-	return HttpResponse{
+	res := HttpResponse{
 		Success: true,
 		Data:    d,
 		Error:   nil,
 	}
+
+	fmt.Println(res)
+	return res
 }
 
 // func generateErr(c string, m string) HttpResponse {

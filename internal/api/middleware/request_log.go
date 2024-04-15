@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -24,7 +23,6 @@ func RequestLog() Middleware {
 		if !err_exist {
 			err = ""
 		}
-		fmt.Println("request_log check context value", msg_exist, err_exist)
 
 		// access the status we are sending
 		status := ctx.Writer.Status()
@@ -32,16 +30,17 @@ func RequestLog() Middleware {
 		switch {
 		case status >= 500:
 			slog.Error(
-				"Unexpected error",
-				"detail", msg,
+				msg.(string),
+				"type", "Unexpected Error",
 				"error", err,
 				"duration", float64(diff),
 				"path", ctx.Request.URL.EscapedPath(),
-				"method", ctx.Request.Method, "status", status)
+				"method", ctx.Request.Method,
+				"status", status)
 		case status >= 400:
 			slog.Warn(
-				"Expected error",
-				"detail", msg,
+				msg.(string),
+				"type", "Expected Error",
 				"error", err,
 				"duration", float64(diff),
 				"path", ctx.Request.URL.EscapedPath(),
@@ -49,8 +48,7 @@ func RequestLog() Middleware {
 				"status", status)
 		default:
 			slog.Info(
-				"Request Processed",
-				"detail", msg,
+				"Request processed",
 				"duration", float64(diff),
 				"path", ctx.Request.URL.EscapedPath(),
 				"method", ctx.Request.Method,

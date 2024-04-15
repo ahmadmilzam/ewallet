@@ -8,11 +8,11 @@ import (
 //go:generate mockery --name AccountStoreQuerier
 type AccountQuery interface {
 	CreateAccount(ctx context.Context, a *Account) (*Account, error)
-	CreateAccountTx(ctx context.Context, a *Account, w *Wallet) error
-	UpgradeAccount(ctx context.Context, a *Account) (*Account, error)
-	FindAccountForUpdateByPhone(ctx context.Context, p string) (*Account, error)
-	FindAccountByPhone(ctx context.Context, p string) (*Account, error)
-	FindAccountAndWalletsByPhone(ctx context.Context, p string) ([]AccountWallet, error)
+	CreateAccountTx(ctx context.Context, a *Account, ww []Wallet, tc *TransferCounter) error
+	UpdateAccount(ctx context.Context, a *Account) (*Account, error)
+	FindAccountForUpdateById(ctx context.Context, id string) (*Account, error)
+	FindAccountById(ctx context.Context, id string) (*Account, error)
+	FindAccountAndWalletsById(ctx context.Context, id string) ([]AccountWallet, error)
 }
 
 type Account struct {

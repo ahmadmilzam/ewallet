@@ -15,7 +15,7 @@ func (s *Queries) CreateWallet(ctx context.Context, w *entity.Wallet) (*entity.W
 	_, err := s.db.NamedExecContext(ctx, CreateWalletSQL, w)
 
 	if err != nil {
-		return nil, fmt.Errorf("error creating wallet: %w", err)
+		return nil, fmt.Errorf("CreateWallet: %w", err)
 	}
 
 	return w, nil
@@ -26,7 +26,7 @@ func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet
 	var mw entity.Wallet
 	err := s.db.GetContext(ctx, &mw, `SELECT * FROM wallets WHERE id = $1 LIMIT 1`, id)
 	if err != nil {
-		return nil, fmt.Errorf("error getting wallet: %w", err)
+		return nil, fmt.Errorf("FindWalletsById: %w", err)
 	}
 
 	return &mw, nil
@@ -37,19 +37,8 @@ func (s *Queries) FindWalletsByPhone(ctx context.Context, p string) ([]entity.Wa
 
 	err := s.db.SelectContext(ctx, &amw, `SELECT * FROM wallets WHERE account_phone=$1`, p)
 	if err != nil {
-		return nil, fmt.Errorf("error getting wallets: %w", err)
+		return nil, fmt.Errorf("FindWalletsByPhone: %w", err)
 	}
 
 	return amw, nil
-}
-
-func (s *Queries) FindWalletsByPhoneAndType(ctx context.Context, p string, t string) (*entity.Wallet, error) {
-	var w entity.Wallet
-
-	err := s.db.SelectContext(ctx, &w, `SELECT * FROM wallets WHERE account_phone=$1 AND type=$2`, p, t)
-	if err != nil {
-		return nil, fmt.Errorf("error getting wallets: %w", err)
-	}
-
-	return &w, nil
 }

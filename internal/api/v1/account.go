@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 
-	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 	"github.com/gin-gonic/gin"
@@ -26,48 +24,12 @@ func NewAccountRoute(handler *gin.RouterGroup, u usecase.AccountUsecaseInterface
 	}
 }
 
-type waResponse struct {
-	Account entity.Account `json:"account_detail"`
-	Wallet  entity.Wallet  `json:"wallet_detail"`
-}
-
 func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	var params usecase.CreateAccountReqParams
 	c := context.Background()
 
 	if err := ctx.ShouldBindJSON(&params); err != nil {
-		slog.Error("Fail to parse", "error", err)
-		ctx.JSON(
-			http.StatusBadRequest,
-			httpres.GenerateErrResponse(errors.New("40000_fail to parse request"), "Fail to parse request"),
-		)
-		return
-	}
-
-	a, w, err := route.usecase.CreateAccount(c, params)
-
-	if err != nil {
-		slog.Error("Fail to create account", "error", err)
-		ctx.JSON(
-			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, "Fail to create account"),
-		)
-		return
-	}
-
-	ctx.JSON(httpres.GetStatusCode(err), httpres.GenerateOK(waResponse{
-		Account: *a,
-		Wallet:  *w,
-	}))
-}
-
-func (route *AccountRoute) getAccount(ctx *gin.Context) {
-	var req usecase.GetAccountReqParams
-	c := context.Background()
-	// phone := phonenumber.Parse(ctx.Param("phone"), "ID")
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		er := errors.New("bad param phone")
-		err := fmt.Errorf("%s: %w", httpres.GenericBadRequest, er)
+		err = fmt.Errorf("%s: r.createAccount: %w", httpres.GenericBadRequest, err)
 
 		ctx.Set("msg", "Fail to parse request data")
 		ctx.Set("err", err)
@@ -78,7 +40,41 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("handler/phone: ", req.Phone)
+	fmt.Println("Req payload parsed")
+	fmt.Println("Begin calling u.CreateAccount")
+	aw, err := route.usecase.CreateAccount(c, params)
+	fmt.Println("Finished called u.CreateAccount")
+	fmt.Println("AW Res: ", aw)
+
+	if err != nil {
+		ctx.Set("msg", "Fail to create account")
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, "Fail to create account"),
+		)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, httpres.GenerateOK(aw))
+}
+
+func (route *AccountRoute) getAccount(ctx *gin.Context) {
+	var req usecase.GetAccountReqParams
+	c := context.Background()
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		er := errors.New("bad param phone")
+		err := fmt.Errorf("%s: r.getAccount: %w", httpres.GenericBadRequest, er)
+
+		ctx.Set("msg", "Fail to parse request data")
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, "Fail to parse request"),
+		)
+		return
+	}
 
 	account, err := route.usecase.GetAccount(c, req.Phone)
 

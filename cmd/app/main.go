@@ -37,8 +37,7 @@ func main() {
 
 	pgstore := store.NewStore()
 
-	// logger.Init()
-	logger.InitializeLogger(logger.NewOption(logger.WithLevel("debug")))
+	logger.InitializeLogger(logger.NewOption(logger.WithLevel("DEBUG")))
 	statsd.Init()
 	trace.Init()
 	defer trace.Stop()

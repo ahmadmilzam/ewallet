@@ -20,7 +20,7 @@ func TestCreateAccountTx(t *testing.T) {
 	a.CreatedAt = now
 	a.UpdatedAt = now
 
-	w := &entity.Wallet{
+	wc := entity.Wallet{
 		ID:           uuid.New().String(),
 		AccountPhone: a.Phone,
 		Balance:      0.00,
@@ -29,7 +29,30 @@ func TestCreateAccountTx(t *testing.T) {
 		UpdatedAt:    now,
 	}
 
-	err1 := testStore.CreateAccountTx(context.Background(), a, w)
+	wp := entity.Wallet{
+		ID:           uuid.New().String(),
+		AccountPhone: a.Phone,
+		Balance:      0.00,
+		Type:         "POINT",
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	ww := []entity.Wallet{}
+
+	ww = append(ww, wc, wp)
+
+	tc := &entity.TransferCounter{
+		WalletId:            wc.ID,
+		CountDaily:          0,
+		CountMonthly:        0,
+		CreditAmountDaily:   0,
+		CreditAmountMonthly: 0,
+		CreatedAt:           now,
+		UpdatedAt:           now,
+	}
+
+	err1 := testStore.CreateAccountTx(context.Background(), a, ww, tc)
 
 	require.NoError(t, err1)
 	// fmt.Println(ar, wr)

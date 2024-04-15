@@ -1,11 +1,8 @@
 package logger
 
 import (
-	"context"
-	"fmt"
 	"io"
 	"log/slog"
-	"runtime"
 	"slices"
 )
 
@@ -23,7 +20,7 @@ func ParseLevel(level string) slog.Level {
 	logLevel := slog.Level(8)
 	err := logLevel.UnmarshalText([]byte(level))
 	if err != nil {
-		slog.Error("failed to parse log level", ErrAttr(err))
+		slog.Error("failed to parse log level", errAttr(err))
 	}
 	return logLevel
 }
@@ -38,7 +35,7 @@ func InitializeLogger(option *Option) {
 	slog.SetDefault(logger)
 }
 
-func ErrAttr(err error) slog.Attr {
+func errAttr(err error) slog.Attr {
 	return slog.String(errorKey, err.Error())
 }
 
@@ -55,7 +52,7 @@ func formatTimeAttrFunc(timeFormat string) func(groups []string, a slog.Attr) sl
 }
 
 func isSensitiveKey(key string) bool {
-	sensitiveKeys := []string{"pin", "password", "secret", "token"}
+	sensitiveKeys := []string{"pin", "password", "secret", "token", "credential"}
 	return slices.Contains(sensitiveKeys, key)
 }
 
@@ -67,17 +64,4 @@ func newCustomHandler(w io.Writer, opts *slog.HandlerOptions) *customHandler {
 	return &customHandler{
 		slog.NewJSONHandler(w, opts),
 	}
-}
-
-func (h *customHandler) Handle(ctx context.Context, r slog.Record) error {
-	// if correlationID, ok := ctx.Value(server.CorrelationIDKey).(string); ok {
-	// 	r.AddAttrs(slog.String(correlationIDKey, correlationID))
-	// }
-	if r.Level == slog.LevelError {
-		fs := runtime.CallersFrames([]uintptr{r.PC})
-		f, _ := fs.Next()
-		r.AddAttrs(slog.String(sourceKey, fmt.Sprintf("%s:%d", f.Function, f.Line)))
-	}
-
-	return h.Handler.Handle(ctx, r)
 }

@@ -10,7 +10,7 @@ type GetAccountReqParams struct {
 	Phone string `uri:"phone"`
 }
 
-type AccountWallets struct {
+type AccountWalletsResBody struct {
 	Phone     string          `json:"phone"`
 	Name      string          `json:"name"`
 	Email     string          `json:"email"`

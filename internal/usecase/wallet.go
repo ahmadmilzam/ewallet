@@ -2,16 +2,13 @@ package usecase
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 )
 
 type WalletUsecaseInterface interface {
 	// CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
-	GetWallet(ctx context.Context, id string) (*entity.Wallet, error)
+	GetWallet(ctx context.Context, p string) ([]entity.Wallet, error)
 }
 
 // func (u *AppUsecase) CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
@@ -50,33 +47,14 @@ type WalletUsecaseInterface interface {
 // 	return ac, wl, nil
 // }
 
-func (u *AppUsecase) GetWallet(ctx context.Context, id string) (*entity.Wallet, error) {
-	fmt.Println("usecase/wallet")
-	w, err := u.store.FindWalletById(ctx, id)
-	if err != nil {
-		fmt.Println("error find wallet", err)
-	}
-
-	if err != nil && !strings.Contains(err.Error(), "no rows in result set") {
-		err = fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
-		return nil, err
-	}
+func (u *AppUsecase) GetWallet(ctx context.Context, p string) ([]entity.Wallet, error) {
+	var wErr error
+	w, err := u.store.FindWalletsByPhone(ctx, p)
 
 	if err != nil {
-		err = fmt.Errorf("%s: %w", httpres.GenericNotFound, err)
-		return nil, err
+		wErr = u.wrapNotFoundErr(err)
+		return nil, wErr
 	}
 
 	return w, nil
 }
-
-// func generateCorrelationId(max int) string {
-// 	source := rand.NewSource(time.Now().UnixNano())
-// 	r := rand.New(source)
-
-// 	tNow := time.Now().UnixNano()
-
-// 	random := r.Intn(max)
-// 	return strconv.Itoa(int(tNow)) + strconv.Itoa(random)
-
-// }
