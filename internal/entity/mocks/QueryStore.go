@@ -43,25 +43,25 @@ func (_m *QueryStore) CreateAccount(ctx context.Context, model entity.Account) (
 }
 
 // CreateJournal provides a mock function with given fields: ctx, model
-func (_m *QueryStore) CreateJournal(ctx context.Context, model entity.Journal) (entity.Journal, error) {
+func (_m *QueryStore) CreateJournal(ctx context.Context, model entity.Transfer) (entity.Transfer, error) {
 	ret := _m.Called(ctx, model)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateJournal")
 	}
 
-	var r0 entity.Journal
+	var r0 entity.Transfer
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Journal) (entity.Journal, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Transfer) (entity.Transfer, error)); ok {
 		return rf(ctx, model)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Journal) entity.Journal); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Transfer) entity.Transfer); ok {
 		r0 = rf(ctx, model)
 	} else {
-		r0 = ret.Get(0).(entity.Journal)
+		r0 = ret.Get(0).(entity.Transfer)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, entity.Journal) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, entity.Transfer) error); ok {
 		r1 = rf(ctx, model)
 	} else {
 		r1 = ret.Error(1)
@@ -315,22 +315,22 @@ func (_m *QueryStore) FindAccounts(ctx context.Context) ([]entity.Account, error
 }
 
 // FindJournal provides a mock function with given fields: ctx, id
-func (_m *QueryStore) FindJournal(ctx context.Context, id string) (entity.Journal, error) {
+func (_m *QueryStore) FindJournal(ctx context.Context, id string) (entity.Transfer, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindJournal")
 	}
 
-	var r0 entity.Journal
+	var r0 entity.Transfer
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Journal, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Transfer, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Journal); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Transfer); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(entity.Journal)
+		r0 = ret.Get(0).(entity.Transfer)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -459,25 +459,25 @@ func (_m *QueryStore) FindWallet(ctx context.Context, id string) (entity.Wallet,
 }
 
 // UpdateJournal provides a mock function with given fields: ctx, model
-func (_m *QueryStore) UpdateJournal(ctx context.Context, model entity.Journal) (entity.Journal, error) {
+func (_m *QueryStore) UpdateJournal(ctx context.Context, model entity.Transfer) (entity.Transfer, error) {
 	ret := _m.Called(ctx, model)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateJournal")
 	}
 
-	var r0 entity.Journal
+	var r0 entity.Transfer
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Journal) (entity.Journal, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Transfer) (entity.Transfer, error)); ok {
 		return rf(ctx, model)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Journal) entity.Journal); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Transfer) entity.Transfer); ok {
 		r0 = rf(ctx, model)
 	} else {
-		r0 = ret.Get(0).(entity.Journal)
+		r0 = ret.Get(0).(entity.Transfer)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, entity.Journal) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, entity.Transfer) error); ok {
 		r1 = rf(ctx, model)
 	} else {
 		r1 = ret.Error(1)

@@ -16,24 +16,24 @@ var (
 	FindCounterForUpdateByIdSQL = `SELECT * FROM transfer_counters WHERE id = $1 LIMIT 1 FOR UPDATE`
 )
 
-func (s *Queries) CreateCounter(ctx context.Context, w *entity.TransferCounter) (*entity.TransferCounter, error) {
-	_, err := s.db.NamedExecContext(ctx, CreateCounterSQL, w)
+func (s *Queries) CreateCounter(ctx context.Context, counter *entity.TransferCounter) (*entity.TransferCounter, error) {
+	_, err := s.db.NamedExecContext(ctx, CreateCounterSQL, counter)
 
 	if err != nil {
 		return nil, fmt.Errorf("CreateCounter: %w", err)
 	}
 
-	return w, nil
+	return counter, nil
 }
 
-func (s *Queries) UpdateCounter(ctx context.Context, tc *entity.TransferCounter) (*entity.TransferCounter, error) {
-	_, err := s.db.NamedExecContext(ctx, UpdateCounterSQL, tc)
+func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.TransferCounter) (*entity.TransferCounter, error) {
+	_, err := s.db.NamedExecContext(ctx, UpdateCounterSQL, counter)
 
 	if err != nil {
 		return nil, fmt.Errorf("UpdateCounter: %w", err)
 	}
 
-	return tc, nil
+	return counter, nil
 }
 
 func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {

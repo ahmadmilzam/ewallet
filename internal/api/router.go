@@ -30,5 +30,6 @@ func NewRouter(router *gin.Engine, u usecase.AppUsecaseInterface) {
 	{
 		v1.NewAccountRoute(rgroupv1, u)
 		v1.NewWalletRoute(rgroupv1, u)
+		v1.NewTransferRoute(rgroupv1, u)
 	}
 }

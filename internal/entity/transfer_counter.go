@@ -6,8 +6,8 @@ import (
 )
 
 type TransferCounterQuery interface {
-	CreateCounter(ctx context.Context, tc *TransferCounter) (*TransferCounter, error)
-	UpdateCounter(ctx context.Context, tc *TransferCounter) (*TransferCounter, error)
+	CreateCounter(ctx context.Context, counter *TransferCounter) (*TransferCounter, error)
+	UpdateCounter(ctx context.Context, counter *TransferCounter) (*TransferCounter, error)
 	FindCounterById(ctx context.Context, id string) (*TransferCounter, error)
 	FindCounterForUpdateById(ctx context.Context, id string) (*TransferCounter, error)
 }

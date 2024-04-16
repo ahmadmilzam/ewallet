@@ -12,10 +12,10 @@ import (
 )
 
 type AccountRoute struct {
-	usecase usecase.AccountUsecaseInterface
+	usecase usecase.AppUsecaseInterface
 }
 
-func NewAccountRoute(handler *gin.RouterGroup, u usecase.AccountUsecaseInterface) {
+func NewAccountRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 	route := &AccountRoute{u}
 	h := handler.Group("/accounts")
 	{
@@ -31,6 +31,18 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&params); err != nil {
 		err = fmt.Errorf("%s: r.createAccount: %w", httpres.GenericBadRequest, err)
 		msg := "Fail to parse request data"
+		ctx.Set("msg", msg)
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, msg),
+		)
+		return
+	}
+
+	isValid, err := params.Validate()
+	if !isValid && err != nil {
+		msg := "Invalid request data"
 		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 )
@@ -11,15 +12,18 @@ import (
 type AppUsecaseInterface interface {
 	AccountUsecaseInterface
 	WalletUsecaseInterface
+	TransferUsecaseInterface
 }
 
 type AppUsecase struct {
-	store entity.StoreQuerier
+	store  entity.StoreQuerier
+	config config.AppConfig
 }
 
-func NewAppUsecase(store entity.StoreQuerier) AppUsecaseInterface {
+func NewAppUsecase(s entity.StoreQuerier, c config.AppConfig) AppUsecaseInterface {
 	return &AppUsecase{
-		store: store,
+		store:  s,
+		config: c,
 	}
 }
 func (u *AppUsecase) wrapNotFoundErr(e error) error {

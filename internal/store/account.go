@@ -41,8 +41,8 @@ const (
 	WHERE a.phone = $1`
 )
 
-func (s *Queries) CreateAccount(ctx context.Context, a *entity.Account) (*entity.Account, error) {
-	_, err := s.db.NamedExecContext(ctx, createAccountSQL, a)
+func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
+	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
 	if err, ok := err.(*pq.Error); ok {
 		// Here err is of type *pq.Error, you may inspect all its fields, e.g.:
 		fmt.Println("pq error:", err)
@@ -57,33 +57,33 @@ func (s *Queries) CreateAccount(ctx context.Context, a *entity.Account) (*entity
 		return nil, err
 	}
 
-	return a, nil
+	return account, nil
 }
 
-func (s *SQLStore) CreateAccountTx(ctx context.Context, a *entity.Account, ww []entity.Wallet, tc *entity.TransferCounter) error {
+func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account, wallets []entity.Wallet, counter *entity.TransferCounter) error {
 
 	err := s.execTx(func(q *Queries) error {
 		var err error
 
-		_, err = q.CreateAccount(ctx, a)
+		_, err = q.CreateAccount(ctx, account)
 		if err != nil {
 			err = fmt.Errorf("CreateAccountTx: %w", err)
 			return err
 		}
 
-		_, err = q.CreateWallet(ctx, &ww[0])
+		_, err = q.CreateWallet(ctx, &wallets[0])
 		if err != nil {
 			err = fmt.Errorf("CreateAccountTx: %w", err)
 			return err
 		}
 
-		_, err = q.CreateWallet(ctx, &ww[1])
+		_, err = q.CreateWallet(ctx, &wallets[1])
 		if err != nil {
 			err = fmt.Errorf("CreateAccountTx: %w", err)
 			return err
 		}
 
-		_, err = q.CreateCounter(ctx, tc)
+		_, err = q.CreateCounter(ctx, counter)
 		if err != nil {
 			err = fmt.Errorf("CreateAccountTx: %w", err)
 			return err
@@ -95,14 +95,14 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, a *entity.Account, ww []
 	return err
 }
 
-func (s *Queries) UpdateAccount(ctx context.Context, a *entity.Account) (*entity.Account, error) {
-	_, err := s.db.NamedExecContext(ctx, updateAccountSQL, a)
+func (s *Queries) UpdateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
+	_, err := s.db.NamedExecContext(ctx, updateAccountSQL, account)
 
 	if err != nil {
 		return nil, fmt.Errorf("UpdateAccount: %w", err)
 	}
 
-	return a, nil
+	return account, nil
 }
 
 func (s *Queries) DeleteAccount(ctx context.Context, id string) error {
@@ -114,9 +114,9 @@ func (s *Queries) DeleteAccount(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *Queries) FindAccountForUpdateById(ctx context.Context, p string) (*entity.Account, error) {
+func (s *Queries) FindAccountForUpdateById(ctx context.Context, phone string) (*entity.Account, error) {
 	a := &entity.Account{}
-	err := s.db.GetContext(ctx, a, findAccountForUpdateByIdSQL, p)
+	err := s.db.GetContext(ctx, a, findAccountForUpdateByIdSQL, phone)
 	if err != nil {
 		return nil, fmt.Errorf("FindAccountForUpdateByPhone: %w", err)
 	}
@@ -128,6 +128,15 @@ func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Ac
 	ma := &entity.Account{}
 	err := s.db.GetContext(ctx, ma, `SELECT * FROM accounts WHERE phone = $1 LIMIT 1`, phone)
 	if err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			// Here err is of type *pq.Error, you may inspect all its fields, e.g.:
+			fmt.Println("pq error:", err)
+			fmt.Println("pq error:", err.Code.Name())
+			/*
+				pq error: pq: duplicate key value violates unique constraint "accounts_pkey"
+				pq error: unique_violation
+			*/
+		}
 		err = fmt.Errorf("FindAccountByPhone: %w", err)
 		return nil, err
 	}
@@ -135,14 +144,14 @@ func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Ac
 	return ma, nil
 }
 
-func (s *Queries) FindAccountAndWalletsById(ctx context.Context, p string) ([]entity.AccountWallet, error) {
-	var aaw []entity.AccountWallet
+func (s *Queries) FindAccountAndWalletsById(ctx context.Context, phone string) ([]entity.AccountWallet, error) {
+	var accWallets []entity.AccountWallet
 
-	err := s.db.SelectContext(ctx, &aaw, findAccountAndWalletsByIdSQL, p)
+	err := s.db.SelectContext(ctx, &accWallets, findAccountAndWalletsByIdSQL, phone)
 	if err != nil {
 		err = fmt.Errorf("FindAccountAndWalletsById: %w", err)
 		return nil, err
 	}
 
-	return aaw, nil
+	return accWallets, nil
 }

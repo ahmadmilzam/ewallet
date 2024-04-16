@@ -7,7 +7,7 @@ import (
 
 //go:generate mockery --name WalletStoreQuerier
 type WalletQuery interface {
-	CreateWallet(ctx context.Context, model *Wallet) (*Wallet, error)
+	CreateWallet(ctx context.Context, wallet *Wallet) (*Wallet, error)
 	FindWalletById(ctx context.Context, id string) (*Wallet, error)
 	FindWalletsByPhone(ctx context.Context, p string) ([]Wallet, error)
 }

@@ -11,10 +11,10 @@ import (
 )
 
 type TransferRoute struct {
-	usecase usecase.TransferUsecaseInterface
+	usecase usecase.AppUsecaseInterface
 }
 
-func NewTransferRoute(handler *gin.RouterGroup, u usecase.TransferUsecaseInterface) {
+func NewTransferRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 	route := &TransferRoute{u}
 	h := handler.Group("/wallets")
 	{

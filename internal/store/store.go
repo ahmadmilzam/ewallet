@@ -15,11 +15,11 @@ type TransferTxParams struct {
 
 // TransferTxResult is the result of the transfer transaction
 type TransferTxResult struct {
-	Journal     entity.Journal  `json:"journal"`
+	Transfer    entity.Transfer `json:"journal"`
 	FromAccount entity.Account  `json:"src_account"`
 	ToAccount   entity.Account  `json:"dst_account"`
-	SrcTransfer entity.Transfer `json:"src_transfer"`
-	DstTransfer entity.Transfer `json:"dst_transfer"`
+	SrcTransfer entity.Entry    `json:"src_transfer"`
+	DstTransfer entity.Entry    `json:"dst_transfer"`
 }
 
 type Store interface {

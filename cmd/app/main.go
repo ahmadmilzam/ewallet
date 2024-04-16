@@ -42,7 +42,7 @@ func main() {
 	trace.Init()
 	defer trace.Stop()
 
-	appUsecase := usecase.NewAppUsecase(pgstore)
+	appUsecase := usecase.NewAppUsecase(pgstore, appConfig)
 
 	// Passing also the basic auth middleware to all  Routers -.
 

@@ -11,10 +11,10 @@ import (
 )
 
 type WalletRoute struct {
-	usecase usecase.WalletUsecaseInterface
+	usecase usecase.AppUsecaseInterface
 }
 
-func NewWalletRoute(handler *gin.RouterGroup, u usecase.WalletUsecaseInterface) {
+func NewWalletRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 	route := &WalletRoute{u}
 	h := handler.Group("/wallets")
 	{

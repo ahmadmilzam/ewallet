@@ -10,9 +10,23 @@ import (
 var c config
 
 type AppConfig struct {
-	Name    string `mapstructure:"name"`
-	Address string `mapstructure:"address"`
-	Port    string `mapstructure:"port"`
+	Name     string         `mapstructure:"name"`
+	Address  string         `mapstructure:"address"`
+	Port     string         `mapstructure:"port"`
+	Transfer TransferConfig `mapstructure:"transfer"`
+}
+
+type TransferConfig struct {
+	Registered   AccConfig `mapstructure:"registered"`
+	Unregistered AccConfig `mapstructure:"unregistered"`
+}
+
+type AccConfig struct {
+	BalanceLimit       int32 `mapstructure:"balance_limit"`
+	DailyCountLimit    int16 `mapstructure:"daily_count_limit"`
+	MonthlyCountLimit  int16 `mapstructure:"monthly_count_limit"`
+	DailyAmountlimit   int32 `mapstructure:"daily_amount_limit"`
+	MonthlyAmountlimit int32 `mapstructure:"monthly_amount_limit"`
 }
 
 type StatsDConfig struct {
@@ -33,11 +47,10 @@ type DatadogConfig struct {
 // }
 
 type config struct {
-	App     AppConfig     `mapstructure:"app"`
-	StatsD  StatsDConfig  `mapstructure:"statsd"`
-	Datadog DatadogConfig `mapstructure:"datadog"`
-	// Sentry   SentryConfig  `mapstructure:"sentry"`
-	DBConfig DBConfig `mapstructure:"database"`
+	App      AppConfig     `mapstructure:"app"`
+	StatsD   StatsDConfig  `mapstructure:"statsd"`
+	Datadog  DatadogConfig `mapstructure:"datadog"`
+	DBConfig DBConfig      `mapstructure:"database"`
 }
 
 func Load(cfgName, path string) error {
@@ -53,7 +66,6 @@ func Load(cfgName, path string) error {
 
 func GetAppConfig() AppConfig {
 	return c.App
-	// return fmt.Sprintf("%s:%s", c.App.Address, c.App.Port)
 }
 
 func GetDatadogConfig() DatadogConfig {
