@@ -6,4 +6,5 @@ const (
 	InvalidTransferType  string = "40002"
 	InvalidAmount        string = "40003"
 	InvalidPhone         string = "40004"
+	InvalidCOAType       string = "40005"
 )

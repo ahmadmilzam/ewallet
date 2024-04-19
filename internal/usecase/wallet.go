@@ -2,13 +2,15 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 )
 
 type WalletUsecaseInterface interface {
 	// CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
-	GetWallet(ctx context.Context, p string) ([]entity.Wallet, error)
+	GetWallets(ctx context.Context, p string) ([]WalletResBody, error)
 }
 
 // func (u *AppUsecase) CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
@@ -47,14 +49,31 @@ type WalletUsecaseInterface interface {
 // 	return ac, wl, nil
 // }
 
-func (u *AppUsecase) GetWallet(ctx context.Context, p string) ([]entity.Wallet, error) {
-	var wErr error
-	w, err := u.store.FindWalletsByPhone(ctx, p)
-
+func (u *AppUsecase) GetWallets(ctx context.Context, p string) ([]WalletResBody, error) {
+	wallets, err := u.store.FindWalletsByPhone(ctx, p)
 	if err != nil {
-		wErr = u.wrapNotFoundErr(err)
-		return nil, wErr
+		return nil, fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
 	}
 
-	return w, nil
+	if len(wallets) == 0 {
+		err = fmt.Errorf("%s: GetWallet", httpres.GenericNotFound)
+		return nil, err
+	}
+
+	return u.mapGetWalletsResponse(wallets), nil
+}
+
+func (u *AppUsecase) mapGetWalletsResponse(wallets []entity.Wallet) []WalletResBody {
+	res := []WalletResBody{}
+
+	for _, w := range wallets {
+		res = append(res, WalletResBody{
+			ID:           w.ID,
+			AccountPhone: w.AccountPhone,
+			Type:         w.Type,
+			Balance:      w.Balance,
+		})
+	}
+
+	return res
 }

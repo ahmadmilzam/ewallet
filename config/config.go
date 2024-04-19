@@ -17,16 +17,16 @@ type AppConfig struct {
 }
 
 type TransferConfig struct {
-	Registered   AccConfig `mapstructure:"registered"`
-	Unregistered AccConfig `mapstructure:"unregistered"`
+	Registered   AccountConfig `mapstructure:"registered"`
+	Unregistered AccountConfig `mapstructure:"unregistered"`
 }
 
-type AccConfig struct {
-	BalanceLimit       int32 `mapstructure:"balance_limit"`
-	DailyCountLimit    int16 `mapstructure:"daily_count_limit"`
-	MonthlyCountLimit  int16 `mapstructure:"monthly_count_limit"`
-	DailyAmountlimit   int32 `mapstructure:"daily_amount_limit"`
-	MonthlyAmountlimit int32 `mapstructure:"monthly_amount_limit"`
+type AccountConfig struct {
+	BalanceLimit             int32   `mapstructure:"balance_limit"`
+	CreditCountDailyLimit    int16   `mapstructure:"credit_count_daily_limit"`
+	CreditCountMonthlyLimit  int16   `mapstructure:"credit_count_monthly_limit"`
+	CreditAmountDailyLimit   float64 `mapstructure:"credit_amount_daily_limit"`
+	CreditAmountMonthlyLimit float64 `mapstructure:"credit_amount_monthly_limit"`
 }
 
 type StatsDConfig struct {

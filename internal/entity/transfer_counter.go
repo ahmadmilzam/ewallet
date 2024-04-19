@@ -14,10 +14,10 @@ type TransferCounterQuery interface {
 
 type TransferCounter struct {
 	WalletId            string    `db:"wallet_id"`
-	CountDaily          int16     `db:"count_daily"`
-	CountMonthly        int16     `db:"count_monthly"`
-	CreditAmountDaily   float64   `db:"amount_daily"`
-	CreditAmountMonthly float64   `db:"amount_monthly"`
+	CreditCountDaily    int16     `db:"credit_count_daily"`
+	CreditCountMonthly  int16     `db:"credit_count_monthly"`
+	CreditAmountDaily   float64   `db:"credit_amount_daily"`
+	CreditAmountMonthly float64   `db:"credit_amount_monthly"`
 	CreatedAt           time.Time `db:"created_at"`
 	UpdatedAt           time.Time `db:"updated_at"`
 }

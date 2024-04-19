@@ -4,6 +4,7 @@ package entity
 type StoreQuerier interface {
 	AccountQuery
 	WalletQuery
-	// TransferQuery
-	// JournalQuery
+	TransferCounterQuery
+	TransferQuery
+	EntryQuery
 }

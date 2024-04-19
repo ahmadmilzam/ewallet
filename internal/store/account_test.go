@@ -44,8 +44,8 @@ func TestCreateAccountTx(t *testing.T) {
 
 	tc := &entity.TransferCounter{
 		WalletId:            wc.ID,
-		CountDaily:          0,
-		CountMonthly:        0,
+		CreditCountDaily:    0,
+		CreditCountMonthly:  0,
 		CreditAmountDaily:   0,
 		CreditAmountMonthly: 0,
 		CreatedAt:           now,
@@ -55,7 +55,6 @@ func TestCreateAccountTx(t *testing.T) {
 	err1 := testStore.CreateAccountTx(context.Background(), a, ww, tc)
 
 	require.NoError(t, err1)
-	// fmt.Println(ar, wr)
 	// require.Equal(t, d.Phone, ac.Phone)
 	// require.Equal(t, d.Name, ac.Name)
 	// require.Equal(t, d.Email, ac.Email)

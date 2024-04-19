@@ -49,6 +49,11 @@ func CustomGenerator() {
 
 		return as[idx], nil
 	})
+
+	_ = faker.AddProvider("accountCOA", func(v reflect.Value) (interface{}, error) {
+
+		return "LIABILITIES", nil
+	})
 }
 
 func RandomAccountData(a *entity.Account) error {

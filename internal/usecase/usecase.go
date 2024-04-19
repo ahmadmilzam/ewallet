@@ -1,12 +1,8 @@
 package usecase
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 )
 
 type AppUsecaseInterface interface {
@@ -26,10 +22,11 @@ func NewAppUsecase(s entity.StoreQuerier, c config.AppConfig) AppUsecaseInterfac
 		config: c,
 	}
 }
-func (u *AppUsecase) wrapNotFoundErr(e error) error {
-	isNotFound := strings.Contains(e.Error(), "no rows in result set")
-	if isNotFound {
-		return fmt.Errorf("%s: %w", httpres.GenericNotFound, e)
-	}
-	return fmt.Errorf("%s: %w", httpres.GenericInternalError, e)
-}
+
+// func (u *AppUsecase) wrapNotFoundErr(e error) error {
+// 	isNotFound := strings.Contains(e.Error(), "no rows in result set")
+// 	if isNotFound {
+// 		return fmt.Errorf("%s: %w", httpres.GenericNotFound, e)
+// 	}
+// 	return fmt.Errorf("%s: %w", httpres.GenericInternalError, e)
+// }

@@ -18,135 +18,121 @@ type AccountUsecaseInterface interface {
 }
 
 func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams) (*AccountWalletsResBody, error) {
-	cAt := time.Now()
-	uAt := time.Now()
+	createdAt := time.Now()
+	updatedAt := time.Now()
 
-	a := &entity.Account{
+	account := &entity.Account{
 		Name:      p.Name,
 		Phone:     p.Phone,
 		Email:     p.Email,
 		Role:      "REGISTERED",
 		Status:    "ACTIVE",
-		CreatedAt: cAt,
-		UpdatedAt: uAt,
+		COAType:   p.COAType,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 
-	ww := []entity.Wallet{}
+	wallets := []entity.Wallet{}
 
-	wc := entity.Wallet{
+	walletCash := entity.Wallet{
 		ID:           uuid.New().String(),
 		AccountPhone: p.Phone,
 		Balance:      0.00,
 		Type:         "CASH",
-		CreatedAt:    cAt,
-		UpdatedAt:    uAt,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 
-	wp := entity.Wallet{
+	walletPoint := entity.Wallet{
 		ID:           uuid.New().String(),
 		AccountPhone: p.Phone,
 		Balance:      0.00,
 		Type:         "POINT",
-		CreatedAt:    cAt,
-		UpdatedAt:    uAt,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 
-	ww = append(ww, wc, wp)
+	wallets = append(wallets, walletCash, walletPoint)
 
-	tc := &entity.TransferCounter{
-		WalletId:            wc.ID,
-		CountDaily:          0,
-		CountMonthly:        0,
+	counter := &entity.TransferCounter{
+		WalletId:            walletCash.ID,
+		CreditCountDaily:    0,
+		CreditCountMonthly:  0,
 		CreditAmountDaily:   0,
 		CreditAmountMonthly: 0,
-		CreatedAt:           cAt,
-		UpdatedAt:           uAt,
+		CreatedAt:           createdAt,
+		UpdatedAt:           updatedAt,
 	}
 
-	err := u.store.CreateAccountTx(ctx, a, ww, tc)
+	err := u.store.CreateAccountTx(ctx, account, wallets, counter)
 	if err != nil {
 		err = fmt.Errorf("%s: CreateAccount: %w", httpres.GenericInternalError, err)
 
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+		if strings.Contains(err.Error(), "duplicreatedAte key value violates unique constraint") {
 			err = fmt.Errorf("%s: CreateAccount: account exists: %w", httpres.DataDuplication, err)
 		}
 		return nil, err
 	}
-	wsc := entity.WalletSummary{
-		Type:    wc.Type,
-		Balance: wc.Balance,
+	accountWallets := []entity.AccountWallet{}
+	walletCashS := entity.Wallet{
+		ID:      walletCash.ID,
+		Type:    walletCash.Type,
+		Balance: walletCash.Balance,
 	}
-	wsp := entity.WalletSummary{
-		Type:    wp.Type,
-		Balance: wp.Balance,
+	walletPointS := entity.Wallet{
+		ID:      walletPoint.ID,
+		Type:    walletPoint.Type,
+		Balance: walletPoint.Balance,
 	}
-	ws := []entity.WalletSummary{}
-	ws = append(ws, wsc, wsp)
 
-	awr := mapCreateAccountResponse(a, ws)
+	accountWallets = append(accountWallets,
+		entity.AccountWallet{
+			Account: *account,
+			Wallet:  walletCashS,
+		}, entity.AccountWallet{
+			Account: *account,
+			Wallet:  walletPointS,
+		},
+	)
 
-	return awr, nil
+	response := u.mapCreateAccountWalletResponse(accountWallets)
+
+	return response, nil
 }
 
-func (u *AppUsecase) GetAccount(ctx context.Context, p string) (*AccountWalletsResBody, error) {
-	var wErr error
-
-	aac, err := u.store.FindAccountAndWalletsById(ctx, p)
+func (u *AppUsecase) GetAccount(ctx context.Context, phone string) (*AccountWalletsResBody, error) {
+	accountWallets, err := u.store.FindAccountAndWalletsById(ctx, phone)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: GetAccount: %w", httpres.GenericInternalError, err)
 	}
 
-	if len(aac) == 0 {
-		wErr = errors.New("no rows in result set")
-		return nil, fmt.Errorf("%s: GetAccount: FindAccountAndWalletsById: %w", httpres.GenericNotFound, wErr)
+	if len(accountWallets) == 0 {
+		err = errors.New("no rows in result set")
+		return nil, fmt.Errorf("%s: GetAccount: %s : %w", httpres.GenericNotFound, phone, err)
 	}
 
-	awr := formatFindAccountAndWalletsByPhone(aac)
+	response := u.mapCreateAccountWalletResponse(accountWallets)
 
-	return awr, nil
+	return response, nil
 }
 
-func formatFindAccountAndWalletsByPhone(feeder []entity.AccountWallet) *AccountWalletsResBody {
-	fmt.Println("feeder", feeder)
-	a := &entity.Account{
+func (u *AppUsecase) mapCreateAccountWalletResponse(feeder []entity.AccountWallet) *AccountWalletsResBody {
+	res := &AccountWalletsResBody{
 		Phone:     feeder[0].Phone,
 		Name:      feeder[0].Name,
 		Email:     feeder[0].Email,
 		Role:      feeder[0].Role,
 		Status:    feeder[0].Status,
-		CreatedAt: feeder[0].CreatedAt,
-		UpdatedAt: feeder[0].UpdatedAt,
+		COAType:   feeder[0].COAType,
+		CreatedAt: JSONTime(feeder[0].Account.CreatedAt.Local()),
+		UpdatedAt: JSONTime(feeder[0].Account.UpdatedAt.Local()),
+		Wallets:   []WalletSummary{},
 	}
-
-	ww := []entity.WalletSummary{}
 
 	for _, v := range feeder {
-		ww = append(ww, entity.WalletSummary{
-			Type:    v.Type,
-			Balance: v.Balance,
-		})
-	}
-
-	res := mapCreateAccountResponse(a, ww)
-	return res
-}
-
-func mapCreateAccountResponse(a *entity.Account, ww []entity.WalletSummary) *AccountWalletsResBody {
-
-	tz := a.CreatedAt.Local().Format(time.RFC3339)
-	res := &AccountWalletsResBody{}
-
-	res.Phone = a.Phone
-	res.Name = a.Name
-	res.Email = a.Email
-	res.Role = a.Role
-	res.Status = a.Status
-	res.CreatedAt = tz
-	res.Wallets = []WalletSummary{}
-
-	for _, v := range ww {
 		res.Wallets = append(res.Wallets, WalletSummary{
+			ID:      v.ID,
 			Type:    v.Type,
 			Balance: v.Balance,
 		})

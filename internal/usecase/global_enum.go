@@ -6,20 +6,25 @@ const (
 	AccountRoleInternalCoa  = "INTERNAL_COA"
 
 	AccountStatusPending  = "PENDING"
-	AccountStatusActive   = "ACTIVATED"
-	AccountStatusInactive = "INACTIVATED"
+	AccountStatusActive   = "ACTIVE"
+	AccountStatusInactive = "INACTIVE"
 	AccountStatusBlocked  = "BLOCKED"
+
+	AccountCOATypeAssets      = "ASSETS"
+	AccountCOATypeExpenses    = "EXPENSES"
+	AccountCOATypeLiabilities = "LIABILITIES"
+	AccountCOATypeEquity      = "EQUITY"
+	AccountCOATypeRevenue     = "REVENUE"
 
 	WalletTypeCash  = "CASH"
 	WalletTypePoint = "POINT"
 
-	JournalTypeTransfer   = "TRANSFER" // default
-	JournalTypeTopup      = "TOPUP"
-	JournalTypePayment    = "PAYMENT"
-	JournalTypeReversal   = "REVERSAL"
-	JournalTypeCorrection = "CORRECTION"
-
-	CurrencyIDR = "IDR"
+	TransferTypeDefault    = "TRANSFER"
+	TransferTypeTopup      = "TOPUP"
+	TransferTypePayment    = "PAYMENT"
+	TransferTypeFee        = "FEE"
+	TransferTypeReversal   = "REVERSAL"
+	TransferTypeCorrection = "CORRECTION"
 )
 
 func GetSupportedAccountRole() []string {
@@ -32,9 +37,11 @@ func GetSupportedAccountRole() []string {
 
 func GetSupportedTransferType() []string {
 	return []string{
-		AccountRoleUnregistered,
-		AccountRoleRegistered,
-		AccountRoleInternalCoa,
+		TransferTypeDefault,
+		TransferTypeTopup,
+		TransferTypePayment,
+		TransferTypeReversal,
+		TransferTypeCorrection,
 	}
 }
 
@@ -44,5 +51,15 @@ func GetSupportedAccountStatus() []string {
 		AccountStatusActive,
 		AccountStatusInactive,
 		AccountStatusBlocked,
+	}
+}
+
+func GetSupportedAccountCOA() []string {
+	return []string{
+		AccountCOATypeAssets,
+		AccountCOATypeExpenses,
+		AccountCOATypeLiabilities,
+		AccountCOATypeEquity,
+		AccountCOATypeRevenue,
 	}
 }

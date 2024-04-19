@@ -21,11 +21,12 @@ type Account struct {
 	Email     string    `db:"email" faker:"email,unique"`
 	Role      string    `db:"role" faker:"accountRole"`
 	Status    string    `db:"status" faker:"accountStatus"`
+	COAType   string    `db:"coa_type"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type AccountWallet struct {
 	Account
-	WalletSummary
+	Wallet `db:"wallet"`
 }

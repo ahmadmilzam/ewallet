@@ -16,7 +16,7 @@ type TransferRoute struct {
 
 func NewTransferRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 	route := &TransferRoute{u}
-	h := handler.Group("/wallets")
+	h := handler.Group("/transfers")
 	{
 		h.POST("/", route.createTransfer)
 	}
@@ -24,10 +24,11 @@ func NewTransferRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 
 func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 	c := context.Background()
-	req := &usecase.CreateTransferReqParams{}
 
-	if err := ctx.ShouldBindJSON(req); err != nil {
-		err = fmt.Errorf("%s: createTransfer: %w", httpres.GenericBadRequest, err)
+	params := &usecase.TransferReqParams{}
+
+	if err := ctx.ShouldBindJSON(params); err != nil {
+		err = fmt.Errorf("%s: createTransfer fail to parse request: %w", httpres.GenericBadRequest, err)
 
 		ctx.Set("msg", "Fail to parse request data")
 		ctx.Set("err", err)
@@ -38,7 +39,19 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	t, err := route.usecase.CreateTransfer(c, req)
+	isValid, err := params.Validate()
+	if !isValid {
+		msg := "Invalid request data"
+		ctx.Set("msg", msg)
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, msg),
+		)
+		return
+	}
+
+	transferResponse, err := route.usecase.CreateTransfer(c, params)
 
 	if err != nil {
 		var msg string
@@ -58,5 +71,5 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpres.GenerateOK(t))
+	ctx.JSON(http.StatusOK, httpres.GenerateOK(transferResponse))
 }

@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ahmadmilzam/ewallet/pkg/array"
 	"github.com/ahmadmilzam/ewallet/pkg/httpres"
 	"github.com/ahmadmilzam/ewallet/pkg/validator"
 )
 
 type CreateAccountReqParams struct {
-	Name  string `json:"name"`
-	Phone string `json:"phone"`
-	Email string `json:"email"`
+	Name    string `json:"name"`
+	Phone   string `json:"phone"`
+	Email   string `json:"email"`
+	COAType string `json:"coa_type"`
 }
 
 func (params *CreateAccountReqParams) Validate() (bool, error) {
@@ -29,6 +31,12 @@ func (params *CreateAccountReqParams) Validate() (bool, error) {
 		return false, err
 	}
 
+	if !array.Contains(GetSupportedAccountCOA(), params.COAType) {
+		err = errors.New("CreateAccount: invalid coa type")
+		err = fmt.Errorf("%s: %w", httpres.InvalidCOAType, err)
+		return false, err
+	}
+
 	return true, nil
 }
 
@@ -42,11 +50,14 @@ type AccountWalletsResBody struct {
 	Email     string          `json:"email"`
 	Role      string          `json:"role"`
 	Status    string          `json:"status"`
-	CreatedAt string          `json:"created_at"`
+	COAType   string          `json:"coa_type"`
+	CreatedAt JSONTime        `json:"created_at"`
+	UpdatedAt JSONTime        `json:"updated_at"`
 	Wallets   []WalletSummary `json:"wallets"`
 }
 
 type WalletSummary struct {
+	ID      string  `json:"id"`
 	Type    string  `json:"type"`
 	Balance float64 `json:"balance"`
 }

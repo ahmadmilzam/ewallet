@@ -13,6 +13,7 @@ CREATE TABLE "accounts" (
   "email" varchar NOT NULL,
   "role" varchar NOT NULL,
   "status" varchar NOT NULL,
+  "coa_type" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
   "updated_at" timestamptz NOT NULL DEFAULT 'now()'
 );
@@ -22,8 +23,10 @@ CREATE TABLE "transfers" (
   "src_wallet_id" varchar NOT NULL,
   "dst_wallet_id" varchar NOT NULL,
   "amount" bigint NOT NULL,
+  "type" varchar NOT NULL,
   "reference" varchar NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT 'now()'
+  "created_at" timestamptz NOT NULL DEFAULT 'now()',
+  "updated_at" timestamptz NOT NULL DEFAULT 'now()'
 );
 
 CREATE TABLE "entries" (
@@ -34,20 +37,23 @@ CREATE TABLE "entries" (
   "balance_before" numeric(22, 2) NOT NULL,
   "balance_after" numeric(22, 2) NOT NULL,
   "correlation_id" varchar NOT NULL,
+  "transfer_id" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
-  "journal_id" varchar NOT NULL
+  "update_at" timestamptz NOT NULL DEFAULT 'now()'
 );
 
-CREATE INDEX ON "wallets" ("account_phone");
+CREATE INDEX IF NOT EXISTS wallets_account_phone_idx ON wallets("account_phone");
 
-CREATE INDEX ON "wallets" ("account_phone", "type");
+CREATE INDEX IF NOT EXISTS wallets_account_phone_type_idx ON wallets("account_phone", "type");
 
-CREATE INDEX ON "transfers" ("src_wallet_id");
+CREATE INDEX IF NOT EXISTS transfers_src_wallet_id_idx ON transfers("src_wallet_id");
 
-CREATE INDEX ON "transfers" ("dst_wallet_id");
+CREATE INDEX IF NOT EXISTS transfers_dst_wallet_id_idx ON transfers("dst_wallet_id");
 
-CREATE INDEX ON "transfers" ("src_wallet_id", "dst_wallet_id");
+CREATE INDEX IF NOT EXISTS transfers_src_dst_wallet_id_idx ON transfers("src_wallet_id", "dst_wallet_id");
 
-CREATE INDEX ON "entries" ("wallet_id");
+CREATE INDEX IF NOT EXISTS entries_transfer_id_idx ON entries("transfer_id");
 
-CREATE INDEX ON "entries" ("wallet_id", "created_at");
+CREATE INDEX IF NOT EXISTS entries_wallet_id_idx ON entries("wallet_id");
+
+CREATE INDEX IF NOT EXISTS entries_wallet_id_created_at_idx ON entries("wallet_id", "created_at");

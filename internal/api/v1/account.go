@@ -41,7 +41,7 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 	}
 
 	isValid, err := params.Validate()
-	if !isValid && err != nil {
+	if !isValid {
 		msg := "Invalid request data"
 		ctx.Set("msg", msg)
 		ctx.Set("err", err)

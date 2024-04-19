@@ -11,7 +11,7 @@ import (
 const (
 	createAccountSQL = `
 	INSERT INTO accounts
-	VALUES(:phone, :name, :email, :role, :status, :created_at, :updated_at)`
+	VALUES(:phone, :name, :email, :role, :status, :coa_type, :created_at, :updated_at)`
 	updateAccountSQL = `
 	UPDATE accounts
 	SET
@@ -26,19 +26,17 @@ const (
 	findAccountForUpdateByIdSQL  = `SELECT * FROM accounts WHERE phone = $1 LIMIT 1 FOR UPDATE`
 	findAccountAndWalletsByIdSQL = `
 	SELECT
-		a.phone,
-		a.name,
-		a.email,
-		a.role,
-		a.status,
-		a.created_at,
-		a.updated_at,
-		w.type,
-		w.balance
+		account.*,
+		wallet.id "wallet.id",
+		wallet.type "wallet.type",
+		wallet.balance "wallet.balance",
+		wallet.created_at "wallet.created_at",
+		wallet.updated_at "wallet.updated_at"
 	FROM
-		accounts a
-	JOIN wallets AS w ON a.phone = w.account_phone
-	WHERE a.phone = $1`
+		accounts AS account
+		JOIN wallets AS wallet ON account.phone = wallet.account_phone
+	WHERE
+		account.phone = $1`
 )
 
 func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {

@@ -6,5 +6,6 @@ const (
 	AccountDstNotFound string = "40402"
 	WalletNotFound     string = "40403"
 	TransferNotFound   string = "40404"
-	JournalNotFound    string = "40405"
+	EntryNotFound      string = "40405"
+	CounterNotFound    string = "40406"
 )

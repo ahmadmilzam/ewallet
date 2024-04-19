@@ -4,17 +4,17 @@ app:
   port: '8000'
   transfer:
     unregistered:
-      balance_limit: 1000000
-      daily_count_limit: 2
-      monthly_count_limit: 10
-      daily_amount_limit: 2000000
-      monthly_amount_limit: 10000000
+      balance_limit: 100000000
+      credit_count_daily_limit: 10
+      credit_count_monthly_limit: 100
+      credit_amount_daily_limit: 1000000000
+      credit_amount_monthly_limit: 10000000000
     registered:
       balance_limit: 10000000
-      daily_count_limit: 10
-      monthly_count_limit: 20
-      daily_amount_limit: 20000000
-      monthly_amount_limit: 40000000
+      credit_count_daily_limit: 10
+      credit_count_monthly_limit: 20
+      credit_amount_daily_limit: 20000000
+      credit_amount_monthly_limit: 40000000
 database:
   host: 'localhost'
   name: 'ewallet'

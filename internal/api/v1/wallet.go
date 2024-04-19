@@ -39,7 +39,7 @@ func (route *WalletRoute) getWallet(ctx *gin.Context) {
 		return
 	}
 
-	account, err := route.usecase.GetWallet(c, id)
+	account, err := route.usecase.GetWallets(c, id)
 
 	if err != nil {
 		var msg string
