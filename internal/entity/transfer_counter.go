@@ -23,6 +23,7 @@ type TransferCounter struct {
 }
 
 type UpdateTransferCounter struct {
+	WalletID      string    `db:"wallet_id"`
 	CountDaily    int16     `db:"count_daily"`
 	CountMonthly  int16     `db:"count_monthly"`
 	AmountDaily   int64     `db:"amount_daily"`

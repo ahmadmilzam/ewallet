@@ -11,7 +11,6 @@ func RequestLog() Middleware {
 	return func(ctx *gin.Context) {
 		t1 := time.Now().UnixNano() / int64(time.Millisecond)
 		ctx.Next()
-
 		t2 := time.Now().UnixNano() / int64(time.Millisecond)
 		diff := t2 - t1
 

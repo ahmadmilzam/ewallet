@@ -41,21 +41,6 @@ func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transf
 
 	err := s.execTx(func(q *Queries) error {
 		var err error
-		// if needSrcLock {
-		// 	_, err = q.FindWalletForUpdateById(ctx, wallets["src"].ID)
-		// 	if err != nil {
-		// 		err = fmt.Errorf("CreateTransferTx: %w", err)
-		// 		return err
-		// 	}
-		// }
-
-		// if needDstLock {
-		// 	_, err = q.FindWalletForUpdateById(ctx, wallets["dst"].ID)
-		// 	if err != nil {
-		// 		err = fmt.Errorf("CreateTransferTx: %w", err)
-		// 		return err
-		// 	}
-		// }
 
 		_, err = q.CreateTransfer(ctx, transfer)
 		if err != nil {
@@ -100,23 +85,3 @@ func (s *Queries) FindTransferById(ctx context.Context, id string) (*entity.Tran
 
 	return counter, nil
 }
-
-// func (s *Queries) UpdateTransfer(ctx context.Context, counter *entity.Transfer) (*entity.Transfer, error) {
-// 	_, err := s.db.NamedExecContext(ctx, UpdateTransferSQL, counter)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("UpdateCounter: %w", err)
-// 	}
-
-// 	return counter, nil
-// }
-
-// func (s *Queries) FindTransferForUpdateById(ctx context.Context, id string) (*entity.Transfer, error) {
-// 	var tc *entity.Transfer
-// 	err := s.db.GetContext(ctx, tc, FindTransferForUpdateByIdSQL, id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("FindCounterById: %w", err)
-// 	}
-
-// 	return tc, nil
-// }

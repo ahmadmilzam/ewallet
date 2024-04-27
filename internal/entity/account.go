@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//go:generate mockery --name AccountStoreQuerier
+//go:generate mockery --name AccountQuery
 type AccountQuery interface {
 	CreateAccount(ctx context.Context, account *Account) (*Account, error)
 	CreateAccountTx(ctx context.Context, account *Account, wallets []Wallet, counter *TransferCounter) error

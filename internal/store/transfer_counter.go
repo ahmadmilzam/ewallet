@@ -15,7 +15,7 @@ var (
 	SET
 		credit_count_daily = credit_count_daily + :count_daily,
 		credit_count_monthly = credit_count_monthly + :count_monthly,
-		credit_amount_daily = credit_amount_monthly + :amount_daily,
+		credit_amount_daily = credit_amount_daily + :amount_daily,
 		credit_amount_monthly = credit_amount_monthly + :amount_monthly,
 		updated_at = :updated_at
 	WHERE wallet_id = :wallet_id`
@@ -46,6 +46,7 @@ func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.UpdateTrans
 func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {
 	counter := &entity.TransferCounter{}
 	err := s.db.GetContext(ctx, counter, FindCounterByIdSQL, id)
+	fmt.Println("Counter data: ", counter)
 	if err != nil {
 		return nil, fmt.Errorf("FindCounterById: %w", err)
 	}

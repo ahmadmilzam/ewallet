@@ -146,16 +146,6 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferRequest
 
 	wallets := []entity.WalletUpdateBalance{}
 	wallets = append(wallets, *srcWalletUpdated, *dstWalletUpdated)
-	// needSrcWalletLock := false
-	// needDstWalletLock := false
-
-	// if srcAccount.Role != AccountRoleInternalCoa {
-	// 	needSrcWalletLock = true
-	// }
-
-	// if dstAccount.Role != AccountRoleInternalCoa {
-	// 	needDstWalletLock = true
-	// }
 
 	// make transfer db transaction
 	err = u.store.CreateTransferTx(
@@ -219,7 +209,7 @@ func (u *AppUsecase) calculateCounter(amount int64, counter *entity.TransferCoun
 	lastTransferMonth := counter.UpdatedAt.Local().Month().String()
 
 	updatedCounter := entity.UpdateTransferCounter{}
-
+	updatedCounter.WalletID = counter.WalletId
 	if currentDay == lastTransferDay {
 		counter.CreditCountDaily++
 		counter.CreditAmountDaily = counter.CreditAmountDaily + amount

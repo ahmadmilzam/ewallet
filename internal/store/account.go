@@ -32,11 +32,9 @@ const (
 		wallet.balance "wallet.balance",
 		wallet.created_at "wallet.created_at",
 		wallet.updated_at "wallet.updated_at"
-	FROM
-		accounts AS account
-		JOIN wallets AS wallet ON account.phone = wallet.account_phone
-	WHERE
-		account.phone = $1`
+	FROM accounts AS account
+	JOIN wallets AS wallet ON account.phone = wallet.account_phone
+	WHERE account.phone = $1`
 )
 
 func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {

@@ -44,8 +44,6 @@ func main() {
 
 	appUsecase := usecase.NewAppUsecase(pgstore, appConfig)
 
-	// Passing also the basic auth middleware to all  Routers -.
-
 	cliApp.Commands = []*cli.Command{
 		{
 			Name:  "start",

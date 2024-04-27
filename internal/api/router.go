@@ -12,7 +12,7 @@ import (
 
 func NewRouter(router *gin.Engine, u usecase.AppUsecaseInterface) {
 	router.HandleMethodNotAllowed = true
-	// K8s probe for kubernetes health checks -.
+	// K8s probe for kubernetes health checks
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "The server is up and running")
 	})

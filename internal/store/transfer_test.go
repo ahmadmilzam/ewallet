@@ -30,6 +30,7 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 	_, dstWallets, _, _ := CreateAccount()
 
 	for i := 0; i < n; i++ {
+		fmt.Println("index: ", i)
 		go func() {
 			reference := fmt.Sprintf("%d", time.Now().UnixMilli())
 			fmt.Println("reference: ", reference)
@@ -94,6 +95,7 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 			walletsToUpdate = append(walletsToUpdate, srcWalletUpdated, dstWalletUpdated)
 
 			updatedCounter := &entity.UpdateTransferCounter{
+				WalletID:      dstWalletUpdated.ID,
 				CountDaily:    1,
 				AmountDaily:   amount,
 				CountMonthly:  1,
@@ -108,11 +110,8 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 				updatedCounter,
 			)
 
-			if err != nil {
-				errs <- err
-			} else {
-				results <- "ok"
-			}
+			errs <- err
+			results <- "ok"
 
 			srcBalance = srcBalance - amount
 			dstBalance = dstBalance + amount
