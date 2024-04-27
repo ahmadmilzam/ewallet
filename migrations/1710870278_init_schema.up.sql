@@ -1,7 +1,7 @@
 CREATE TABLE "wallets" (
   "id" varchar PRIMARY KEY,
   "account_phone" varchar NOT NULL,
-  "balance" numeric(22, 2) NOT NULL,
+  "balance" bigint NOT NULL,
   "type" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
   "updated_at" timestamptz NOT NULL DEFAULT 'now()'
@@ -22,7 +22,7 @@ CREATE TABLE "transfers" (
   "id" varchar PRIMARY KEY,
   "src_wallet_id" varchar NOT NULL,
   "dst_wallet_id" varchar NOT NULL,
-  "amount" bigint NOT NULL,
+  "amount" integer NOT NULL,
   "type" varchar NOT NULL,
   "reference" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
@@ -32,10 +32,10 @@ CREATE TABLE "transfers" (
 CREATE TABLE "entries" (
   "id" varchar PRIMARY KEY,
   "wallet_id" varchar NOT NULL,
-  "credit_amount" bigint NOT NULL,
-  "debit_amount" bigint NOT NULL,
-  "balance_before" numeric(22, 2) NOT NULL,
-  "balance_after" numeric(22, 2) NOT NULL,
+  "credit_amount" integer NOT NULL,
+  "debit_amount" integer NOT NULL,
+  "balance_before" bigint NOT NULL,
+  "balance_after" bigint NOT NULL,
   "correlation_id" varchar NOT NULL,
   "transfer_id" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT 'now()',

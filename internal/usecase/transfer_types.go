@@ -9,21 +9,21 @@ import (
 	"github.com/ahmadmilzam/ewallet/pkg/validator"
 )
 
-type TransferReqParams struct {
-	SrcWallet    string  `json:"src_account,omitempty"`
-	DstWallet    string  `json:"dst_account"`
-	Amount       float64 `json:"amount"`
-	TransferType string  `json:"transfer_type"`
-	Reference    string  `json:"reference,omitempty"`
+type TransferRequestParams struct {
+	SrcWallet    string `json:"src_account,omitempty"`
+	DstWallet    string `json:"dst_account"`
+	Amount       int64  `json:"amount"`
+	TransferType string `json:"transfer_type"`
+	Reference    string `json:"reference,omitempty"`
 }
 
-type TransferResBody struct {
-	TransferReqParams
+type TransferSuccessResponse struct {
+	TransferRequestParams
 	TransferID string   `json:"transfer_id"`
 	CreatedAt  JSONTime `json:"created_at"`
 }
 
-func (params *TransferReqParams) Validate() (bool, error) {
+func (params *TransferRequestParams) Validate() (bool, error) {
 	var err error
 	if params.DstWallet == params.SrcWallet {
 		err = errors.New("CreateTransfer: cannot transfer to same account")

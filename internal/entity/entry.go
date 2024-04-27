@@ -13,10 +13,10 @@ type EntryQuery interface {
 type Entry struct {
 	ID            string    `db:"id"`
 	WalletID      string    `db:"wallet_id"`
-	CreditAmount  float64   `db:"credit_amount"`
-	DebitAmount   float64   `db:"debit_amount"`
-	BalanceBefore float64   `db:"balance_before"`
-	BalanceAfter  float64   `db:"balance_after"`
+	CreditAmount  int64     `db:"credit_amount"`
+	DebitAmount   int64     `db:"debit_amount"`
+	BalanceBefore int64     `db:"balance_before"`
+	BalanceAfter  int64     `db:"balance_after"`
 	CorrelationID string    `db:"correlation_id"`
 	TransferID    string    `db:"transfer_id"`
 	CreatedAt     time.Time `db:"created_at"`

@@ -10,8 +10,14 @@ import (
 var (
 	CreateCounterSQL = `INSERT INTO transfer_counters
 	VALUES(:wallet_id, :credit_count_daily, :credit_count_monthly, :credit_amount_daily, :credit_amount_monthly, :created_at, :updated_at)`
-	UpdateCounterSQL = `UPDATE transfer_counters
-	SET wallet_id = :wallet_id, credit_count_daily = :credit_count_daily, credit_count_monthly = :credit_count_monthly, credit_amount_daily = :credit_amount_daily, credit_amount_monthly = :credit_amount_monthly, updated_at = :updated_at
+	UpdateCounterSQL = `
+	UPDATE transfer_counters
+	SET
+		credit_count_daily = credit_count_daily + :count_daily,
+		credit_count_monthly = credit_count_monthly + :count_monthly,
+		credit_amount_daily = credit_amount_monthly + :amount_daily,
+		credit_amount_monthly = credit_amount_monthly + :amount_monthly,
+		updated_at = :updated_at
 	WHERE wallet_id = :wallet_id`
 	FindCounterByIdSQL          = `SELECT * FROM transfer_counters WHERE wallet_id = $1 LIMIT 1`
 	FindCounterForUpdateByIdSQL = `SELECT * FROM transfer_counters WHERE wallet_id = $1 LIMIT 1 FOR UPDATE`
@@ -27,14 +33,14 @@ func (s *Queries) CreateCounter(ctx context.Context, counter *entity.TransferCou
 	return counter, nil
 }
 
-func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.TransferCounter) (*entity.TransferCounter, error) {
+func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.UpdateTransferCounter) error {
 	_, err := s.db.NamedExecContext(ctx, UpdateCounterSQL, counter)
 
 	if err != nil {
-		return nil, fmt.Errorf("UpdateCounter: %w", err)
+		return fmt.Errorf("UpdateCounter: %w", err)
 	}
 
-	return counter, nil
+	return nil
 }
 
 func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {

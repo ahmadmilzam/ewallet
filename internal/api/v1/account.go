@@ -65,7 +65,7 @@ func (route *AccountRoute) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, httpres.GenerateOK(aw))
+	ctx.JSON(http.StatusCreated, httpres.GenerateOkResponse(aw))
 }
 
 func (route *AccountRoute) getAccount(ctx *gin.Context) {
@@ -105,5 +105,5 @@ func (route *AccountRoute) getAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpres.GenerateOK(account))
+	ctx.JSON(http.StatusOK, httpres.GenerateOkResponse(account))
 }

@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:alpine3.19
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=ewallet
+    ports:
+      - "5432:5432"
+    volumes:
+      - data-volume:/var/lib/postgresql/data
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+      - "4001:4000"
+    depends_on:
+      - postgres
+    entrypoint: [ "/app/main" ]
+    command: [ "start" ]
+volumes:
+  data-volume:
+    driver: local

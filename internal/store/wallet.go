@@ -20,6 +20,12 @@ const (
 		created_at = :created_at,
 		updated_at = :updated_at
 	WHERE id = :id`
+	UpdateWalletBalaceSQL = `
+	UPDATE wallets
+	SET
+		balance = balance + :amount,
+		updated_at = :updated_at
+	WHERE id = :id`
 	FindWalletByIdSQL          = `SELECT * FROM wallets WHERE id = $1 LIMIT 1`
 	FindWalletForUpdateByIdSQL = `SELECT * FROM wallets WHERE id = $1 LIMIT 1 FOR UPDATE`
 	FindWalletByPhoneSQL       = `SELECT * FROM wallets WHERE account_phone=$1`
@@ -44,6 +50,21 @@ func (s *Queries) UpdateWallet(ctx context.Context, wallet *entity.Wallet) error
 	affected, _ := results.RowsAffected()
 	if affected <= 0 {
 		return errors.New("UpdateWallet: fail, no rows updated")
+	}
+
+	return nil
+}
+
+func (s *Queries) UpdateWalletBalance(ctx context.Context, wallet *entity.WalletUpdateBalance) error {
+
+	results, err := s.db.NamedExecContext(ctx, UpdateWalletBalaceSQL, wallet)
+	if err != nil {
+		return fmt.Errorf("UpdateWalletBalance: %w", err)
+	}
+
+	affected, _ := results.RowsAffected()
+	if affected <= 0 {
+		return errors.New("UpdateWalletBalance: fail, no rows updated")
 	}
 
 	return nil

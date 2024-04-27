@@ -14,13 +14,7 @@ import (
 	"github.com/go-faker/faker/v4"
 )
 
-/*
-if !array.Contains(GetSupportedUserType(), payer.User.Type) {
-	return false, errors.New("unsupported payer type")
-}
-*/
-
-func CustomGenerator() {
+func init() {
 	_ = faker.AddProvider("customphone", func(v reflect.Value) (interface{}, error) {
 		s := rand.NewSource(time.Now().UnixNano())
 		r := rand.New(s)
@@ -56,13 +50,12 @@ func CustomGenerator() {
 	})
 }
 
-func RandomAccountData(a *entity.Account) error {
-	CustomGenerator()
-
+func GenerateAccountData(a *entity.Account) error {
 	err := faker.FakeData(a)
 	if err != nil {
 		return err
 	}
+
 	faker.ResetUnique()
 	return nil
 }

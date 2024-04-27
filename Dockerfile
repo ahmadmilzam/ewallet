@@ -14,4 +14,5 @@ RUN apk update && \
   apk add --no-cache tzdata
 ENV TZ=Asia/Jakarta
 EXPOSE 3000
-ENTRYPOINT [ "/app/main", "start" ]
+ENTRYPOINT [ "/app/main" ]
+CMD [ "start" ]

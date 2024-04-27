@@ -17,7 +17,7 @@ type sampleData struct {
 
 type dataArr []sampleData
 
-func TestGenerateOK(t *testing.T) {
+func TestGenerateOkResponse(t *testing.T) {
 	data := sampleData{
 		ID:    "123",
 		Name:  "John Doe",
@@ -32,8 +32,8 @@ func TestGenerateOK(t *testing.T) {
 
 	dataSlice := dataArr{data, data2}
 
-	actualFlat := GenerateOK(data)
-	actualArr := GenerateOK(dataSlice)
+	actualFlat := GenerateOkResponse(data)
+	actualArr := GenerateOkResponse(dataSlice)
 
 	expectedFlat := HttpResponse{
 		Success: true,

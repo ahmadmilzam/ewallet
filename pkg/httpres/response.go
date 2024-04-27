@@ -15,20 +15,20 @@ type ErrorDetails struct {
 	Message string `json:"message,omitempty"`
 }
 
-func GenerateErrResponse(e error, m string) HttpResponse {
+func GenerateErrResponse(err error, message string) HttpResponse {
 	return HttpResponse{
 		Success: false,
 		Error: &ErrorDetails{
-			Code:    GetCaseCode(e),
-			Message: m,
+			Code:    GetCaseCode(err),
+			Message: message,
 		},
 	}
 }
 
-func GenerateOK(d any) HttpResponse {
+func GenerateOkResponse(data any) HttpResponse {
 	res := HttpResponse{
 		Success: true,
-		Data:    d,
+		Data:    data,
 		Error:   nil,
 	}
 	return res

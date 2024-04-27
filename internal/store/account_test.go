@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -11,53 +12,66 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateAccountTx(t *testing.T) {
-	a := &entity.Account{}
-	err := randomizer.RandomAccountData(a)
-	require.NoError(t, err)
+func CreateAccount() (entity.Account, []entity.Wallet, entity.TransferCounter, error) {
+	now := time.Now()
+	account := entity.Account{}
+	err := randomizer.GenerateAccountData(&account)
+	if err != nil {
+		return entity.Account{}, nil, entity.TransferCounter{}, err
+	}
+	account.Phone = fmt.Sprintf("+%s ", account.Phone)
+	account.CreatedAt = now
+	account.UpdatedAt = now
+
+	wallets := createWalletForAccount(account.Phone)
+	counter := createTransferCounter(wallets[0].ID)
+
+	return account, wallets, counter, nil
+}
+
+func createWalletForAccount(phone string) []entity.Wallet {
+	var wallets []entity.Wallet
 
 	now := time.Now()
-	a.CreatedAt = now
-	a.UpdatedAt = now
-
-	wc := entity.Wallet{
+	cash := entity.Wallet{
 		ID:           uuid.New().String(),
-		AccountPhone: a.Phone,
+		AccountPhone: phone,
 		Balance:      0.00,
 		Type:         "CASH",
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
 
-	wp := entity.Wallet{
+	point := entity.Wallet{
 		ID:           uuid.New().String(),
-		AccountPhone: a.Phone,
+		AccountPhone: phone,
 		Balance:      0.00,
-		Type:         "POINT",
+		Type:         "CASH",
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
 
-	ww := []entity.Wallet{}
+	wallets = append(wallets, cash, point)
+	return wallets
+}
 
-	ww = append(ww, wc, wp)
-
-	tc := &entity.TransferCounter{
-		WalletId:            wc.ID,
+func createTransferCounter(walletID string) entity.TransferCounter {
+	return entity.TransferCounter{
+		WalletId:            walletID,
 		CreditCountDaily:    0,
 		CreditCountMonthly:  0,
 		CreditAmountDaily:   0,
 		CreditAmountMonthly: 0,
-		CreatedAt:           now,
-		UpdatedAt:           now,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
+}
 
-	err1 := testStore.CreateAccountTx(context.Background(), a, ww, tc)
+func TestStoreAccount_CreateAccountTx(t *testing.T) {
+	account, wallets, counter, err := CreateAccount()
+	require.NoError(t, err)
+
+	err1 := testStore.CreateAccountTx(context.Background(), &account, wallets, &counter)
 
 	require.NoError(t, err1)
-	// require.Equal(t, d.Phone, ac.Phone)
-	// require.Equal(t, d.Name, ac.Name)
-	// require.Equal(t, d.Email, ac.Email)
-	// require.Equal(t, d.Role, ac.Role)
-	// require.Equal(t, d.Status, ac.Status)
 }

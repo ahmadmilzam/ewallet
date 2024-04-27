@@ -25,7 +25,7 @@ func NewTransferRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 	c := context.Background()
 
-	params := &usecase.TransferReqParams{}
+	params := &usecase.TransferRequestParams{}
 
 	if err := ctx.ShouldBindJSON(params); err != nil {
 		err = fmt.Errorf("%s: createTransfer fail to parse request: %w", httpres.GenericBadRequest, err)
@@ -71,5 +71,5 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpres.GenerateOK(transferResponse))
+	ctx.JSON(http.StatusOK, httpres.GenerateOkResponse(transferResponse))
 }

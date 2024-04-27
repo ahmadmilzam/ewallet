@@ -59,5 +59,5 @@ func (route *WalletRoute) getWallet(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpres.GenerateOK(account))
+	ctx.JSON(http.StatusOK, httpres.GenerateOkResponse(account))
 }

@@ -35,7 +35,7 @@ func main() {
 	dbConfig := config.GetDBConfig()
 	migrate := migration.CreateMigrate(dbConfig.Name)
 
-	pgstore := store.NewStore()
+	pgstore := store.NewSQLStore()
 
 	logger.InitializeLogger(logger.NewOption(logger.WithLevel("DEBUG")))
 	statsd.Init()

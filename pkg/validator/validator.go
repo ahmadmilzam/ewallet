@@ -12,7 +12,7 @@ func IsValidEmail(email string) bool {
 	return emailRegex.MatchString(email)
 }
 
-func IsValidAmount(amount float64) bool {
+func IsValidAmount(amount int64) bool {
 	return amount > 0
 }
 

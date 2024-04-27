@@ -17,10 +17,10 @@ import (
 
 type TransferUsecaseInterface interface {
 	// CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
-	CreateTransfer(ctx context.Context, params *TransferReqParams) (*TransferResBody, error)
+	CreateTransfer(ctx context.Context, params *TransferRequestParams) (*TransferSuccessResponse, error)
 }
 
-func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqParams) (*TransferResBody, error) {
+func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferRequestParams) (*TransferSuccessResponse, error) {
 	// get the account src and dst detail (with the wallets)
 	// check if the accounts exist & ACTIVE, or return err
 	srcAccount, err := u.findActiveAccount(ctx, params.SrcWallet)
@@ -31,8 +31,7 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqPara
 
 	// ensure that for topup transfer, the srcAccount type must be an assests
 	if params.TransferType == TransferTypeTopup && srcAccount.COAType != AccountCOATypeAssets {
-		err = errors.New("src wallet for topup transfer must be an assets")
-		return nil, fmt.Errorf("%s: CreateTransfer: %w", httpres.IncorrectAccountType, err)
+		return nil, fmt.Errorf("%s: CreateTransfer: src wallet for topup transfer must be an assets", httpres.IncorrectAccountType)
 	}
 
 	dstAccount, err := u.findActiveAccount(ctx, params.DstWallet)
@@ -67,14 +66,14 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqPara
 		return nil, fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
 	}
 
-	// calculate post transaction counter, will modify current counter
-	u.calculateCounter(params.Amount, transferCounter)
+	// calculate post transaction counter, will return updated counter data
+	updatedCounter := u.calculateCounter(params.Amount, transferCounter)
 
 	// validate the credit counter limit daily & monthly still below threshold
 	// validate the credit amount limit daily & monthly ensure still below threshold
 	err = u.validateCounter(transferCounter, creditRules)
 	if err != nil {
-		println("validate counter err: ", err.Error())
+		fmt.Println("validate counter err: ", err.Error())
 		return nil, err
 	}
 
@@ -133,38 +132,30 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqPara
 
 	entries = append(entries, srcEntry, dstEntry)
 
-	srcWalletUpdated := &entity.Wallet{
-		ID:           srcCashWallet.ID,
-		AccountPhone: params.SrcWallet,
-		Balance:      srcBalanceAfter,
-		Type:         srcCashWallet.Type,
-		CreatedAt:    time.Time(srcAccount.CreatedAt),
-		UpdatedAt:    now,
+	srcWalletUpdated := &entity.WalletUpdateBalance{
+		ID:        srcCashWallet.ID,
+		Amount:    -params.Amount,
+		UpdatedAt: now,
 	}
 
-	dstWalletUpdated := &entity.Wallet{
-		ID:           dstCashWallet.ID,
-		AccountPhone: params.DstWallet,
-		Balance:      dstBalanceAfter,
-		Type:         dstCashWallet.Type,
-		CreatedAt:    time.Time(srcAccount.CreatedAt),
-		UpdatedAt:    now,
+	dstWalletUpdated := &entity.WalletUpdateBalance{
+		ID:        dstCashWallet.ID,
+		Amount:    params.Amount,
+		UpdatedAt: now,
 	}
 
-	wallets := make(map[string]entity.Wallet)
-	wallets["src"] = *srcWalletUpdated
-	wallets["dst"] = *dstWalletUpdated
+	wallets := []entity.WalletUpdateBalance{}
+	wallets = append(wallets, *srcWalletUpdated, *dstWalletUpdated)
+	// needSrcWalletLock := false
+	// needDstWalletLock := false
 
-	needSrcWalletLock := false
-	needDstWalletLock := false
+	// if srcAccount.Role != AccountRoleInternalCoa {
+	// 	needSrcWalletLock = true
+	// }
 
-	if srcAccount.Role != AccountRoleInternalCoa {
-		needSrcWalletLock = true
-	}
-
-	if dstAccount.Role != AccountRoleInternalCoa {
-		needDstWalletLock = true
-	}
+	// if dstAccount.Role != AccountRoleInternalCoa {
+	// 	needDstWalletLock = true
+	// }
 
 	// make transfer db transaction
 	err = u.store.CreateTransferTx(
@@ -172,9 +163,7 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqPara
 		transfer,
 		entries,
 		wallets,
-		transferCounter,
-		needSrcWalletLock,
-		needDstWalletLock,
+		&updatedCounter,
 	)
 
 	if err != nil {
@@ -182,10 +171,10 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *TransferReqPara
 	}
 
 	// remap transfer response based on above process (err/ok)
-	response := &TransferResBody{
-		TransferReqParams: *params,
-		TransferID:        transferId,
-		CreatedAt:         JSONTime(now),
+	response := &TransferSuccessResponse{
+		TransferRequestParams: *params,
+		TransferID:            transferId,
+		CreatedAt:             JSONTime(now),
 	}
 	return response, nil
 }
@@ -204,7 +193,7 @@ func (u *AppUsecase) findActiveAccount(ctx context.Context, phone string) (*Acco
 	return account, nil
 }
 
-func (u *AppUsecase) isBalanceAfterAllowed(amount float64, srcAccount *AccountWalletsResBody, dstAccount *AccountWalletsResBody, creditRules config.AccountConfig) (float64, float64, error) {
+func (u *AppUsecase) isBalanceAfterAllowed(amount int64, srcAccount *AccountWalletsResBody, dstAccount *AccountWalletsResBody, creditRules config.AccountConfig) (int64, int64, error) {
 	srcBalanceAfter := srcAccount.Wallets[0].Balance - amount
 	if srcBalanceAfter-amount < 0 && srcAccount.Role != AccountRoleInternalCoa {
 		err := errors.New("isBalanceAfterAllowed: insufficient balance")
@@ -213,7 +202,7 @@ func (u *AppUsecase) isBalanceAfterAllowed(amount float64, srcAccount *AccountWa
 	}
 
 	dstBalanceAfter := dstAccount.Wallets[0].Balance + amount
-	if dstBalanceAfter > float64(creditRules.BalanceLimit) {
+	if dstBalanceAfter > int64(creditRules.BalanceLimit) {
 		err := errors.New("isAdditionAllowed: exceed balance limit for the role")
 		err = fmt.Errorf("%s: CreateTransfer: %w", httpres.ExceedBalanceAmount, err)
 		return 0, 0, err
@@ -222,29 +211,48 @@ func (u *AppUsecase) isBalanceAfterAllowed(amount float64, srcAccount *AccountWa
 	return srcBalanceAfter, dstBalanceAfter, nil
 }
 
-func (u *AppUsecase) calculateCounter(amount float64, counter *entity.TransferCounter) {
-	currentMonth := time.Now().Month().String()
+func (u *AppUsecase) calculateCounter(amount int64, counter *entity.TransferCounter) entity.UpdateTransferCounter {
 	currentDay := time.Now().Day()
-	lastTransferMonth := counter.UpdatedAt.Local().Month().String()
 	lastTransferDay := counter.UpdatedAt.Local().Day()
+
+	currentMonth := time.Now().Month().String()
+	lastTransferMonth := counter.UpdatedAt.Local().Month().String()
+
+	updatedCounter := entity.UpdateTransferCounter{}
 
 	if currentDay == lastTransferDay {
 		counter.CreditCountDaily++
 		counter.CreditAmountDaily = counter.CreditAmountDaily + amount
+
+		updatedCounter.CountDaily = 1
+		updatedCounter.AmountDaily = amount
 	} else {
 		counter.CreditCountDaily = 1
 		counter.CreditAmountDaily = amount
+
+		updatedCounter.CountDaily = -(counter.CreditCountDaily - 1)
+		updatedCounter.AmountDaily = -(counter.CreditAmountDaily - amount)
 	}
 
 	if currentMonth == lastTransferMonth {
 		counter.CreditCountMonthly++
 		counter.CreditAmountMonthly = counter.CreditAmountMonthly + amount
+
+		updatedCounter.CountMonthly = 1
+		updatedCounter.AmountMonthly = amount
 	} else {
 		counter.CreditCountMonthly = 1
 		counter.CreditAmountMonthly = amount
-	}
 
-	counter.UpdatedAt = time.Now()
+		updatedCounter.CountDaily = -(counter.CreditCountMonthly - 1)
+		updatedCounter.AmountDaily = -(counter.CreditAmountMonthly - amount)
+	}
+	now := time.Now()
+
+	counter.UpdatedAt = now
+	updatedCounter.UpdatedAt = now
+
+	return updatedCounter
 }
 
 func (u *AppUsecase) validateCounter(counter *entity.TransferCounter, rules config.AccountConfig) error {
@@ -266,35 +274,6 @@ func (u *AppUsecase) validateCounter(counter *entity.TransferCounter, rules conf
 	}
 	return nil
 }
-
-// func validateBalanceAfter(role string, wallet *entity.Wallet) (bool, float64) {
-// 	rules := config.AppConfig.Tra
-// 	return true, 0.00
-// }
-
-// func calculateCounter() {
-// 	lastTransactionTimestamp = transactionTimestamp;
-// 	DateFormat dateFormatDaily = new SimpleDateFormat(DATE_FORMAT_DAILY);
-// 	DateFormat dateFormatMonthly = new SimpleDateFormat(DATE_FORMAT_MONTHLY);
-// 	String transactionDaily = dateFormatDaily.format(transactionTimestamp);
-// 	String transactionMonthly = dateFormatMonthly.format(transactionTimestamp);
-// 	if (transactionDaily.equals(lastTransactionDaily)) {
-// 		amountDaily = amountDaily.add(amount);
-// 		countDaily++;
-// 	} else {
-// 		lastTransactionDaily = transactionDaily;
-// 		amountDaily = amount;
-// 		countDaily = 1;
-// 	}
-// 	if (transactionMonthly.equals(lastTransactionMonthly)) {
-// 		amountMonthly = amountMonthly.add(amount);
-// 		countMonthly++;
-// 	} else {
-// 		lastTransactionMonthly = transactionMonthly;
-// 		amountMonthly = amount;
-// 		countMonthly = 1;
-// 	}
-// }
 
 func generateCorrelationId() string {
 	const CORRELATION_MAX_DIGITS = 3

@@ -22,11 +22,11 @@ type TransferConfig struct {
 }
 
 type AccountConfig struct {
-	BalanceLimit             int32   `mapstructure:"balance_limit"`
-	CreditCountDailyLimit    int16   `mapstructure:"credit_count_daily_limit"`
-	CreditCountMonthlyLimit  int16   `mapstructure:"credit_count_monthly_limit"`
-	CreditAmountDailyLimit   float64 `mapstructure:"credit_amount_daily_limit"`
-	CreditAmountMonthlyLimit float64 `mapstructure:"credit_amount_monthly_limit"`
+	BalanceLimit             int32 `mapstructure:"balance_limit"`
+	CreditCountDailyLimit    int16 `mapstructure:"credit_count_daily_limit"`
+	CreditCountMonthlyLimit  int16 `mapstructure:"credit_count_monthly_limit"`
+	CreditAmountDailyLimit   int64 `mapstructure:"credit_amount_daily_limit"`
+	CreditAmountMonthlyLimit int64 `mapstructure:"credit_amount_monthly_limit"`
 }
 
 type StatsDConfig struct {

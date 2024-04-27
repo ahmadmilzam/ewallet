@@ -37,25 +37,25 @@ func (s *Queries) CreateTransfer(ctx context.Context, transfer *entity.Transfer)
 	return transfer, nil
 }
 
-func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets map[string]entity.Wallet, counter *entity.TransferCounter, needSrcLock bool, needDstLock bool) error {
+func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets []entity.WalletUpdateBalance, counter *entity.UpdateTransferCounter) error {
 
 	err := s.execTx(func(q *Queries) error {
 		var err error
-		if needSrcLock {
-			_, err = q.FindWalletForUpdateById(ctx, wallets["src"].ID)
-			if err != nil {
-				err = fmt.Errorf("CreateTransferTx: %w", err)
-				return err
-			}
-		}
+		// if needSrcLock {
+		// 	_, err = q.FindWalletForUpdateById(ctx, wallets["src"].ID)
+		// 	if err != nil {
+		// 		err = fmt.Errorf("CreateTransferTx: %w", err)
+		// 		return err
+		// 	}
+		// }
 
-		if needDstLock {
-			_, err = q.FindWalletForUpdateById(ctx, wallets["dst"].ID)
-			if err != nil {
-				err = fmt.Errorf("CreateTransferTx: %w", err)
-				return err
-			}
-		}
+		// if needDstLock {
+		// 	_, err = q.FindWalletForUpdateById(ctx, wallets["dst"].ID)
+		// 	if err != nil {
+		// 		err = fmt.Errorf("CreateTransferTx: %w", err)
+		// 		return err
+		// 	}
+		// }
 
 		_, err = q.CreateTransfer(ctx, transfer)
 		if err != nil {
@@ -72,14 +72,14 @@ func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transf
 		}
 
 		for _, wallet := range wallets {
-			err = q.UpdateWallet(ctx, &wallet)
+			err = q.UpdateWalletBalance(ctx, &wallet)
 			if err != nil {
 				err = fmt.Errorf("CreateTransferTx: %w", err)
 				return err
 			}
 		}
 
-		_, err = q.UpdateCounter(ctx, counter)
+		err = q.UpdateCounter(ctx, counter)
 		if err != nil {
 			err = fmt.Errorf("CreateTransferTx: %w", err)
 			return err
