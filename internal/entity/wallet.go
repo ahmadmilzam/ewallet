@@ -16,12 +16,12 @@ type WalletQuery interface {
 }
 
 type Wallet struct {
-	ID           string    `db:"id,prefix=wallet_"`
+	ID           string    `db:"id"`
 	AccountPhone string    `db:"account_phone"`
 	Balance      int64     `db:"balance"`
 	Type         string    `db:"type"`
-	CreatedAt    time.Time `db:"created_at,prefix=wallet_"`
-	UpdatedAt    time.Time `db:"updated_at,prefix=wallet_"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }
 
 type WalletSummary struct {
