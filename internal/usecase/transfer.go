@@ -16,7 +16,6 @@ import (
 )
 
 type TransferUsecaseInterface interface {
-	// CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
 	CreateTransfer(ctx context.Context, params *TransferRequestParams) (*TransferSuccessResponse, error)
 }
 

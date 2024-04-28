@@ -28,6 +28,5 @@ func IsValidTimestampt(timestamp string) bool {
 	if err != nil {
 		return false
 	}
-
 	return !ts.IsZero()
 }
