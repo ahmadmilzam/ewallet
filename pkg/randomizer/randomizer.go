@@ -35,13 +35,7 @@ func init() {
 	})
 
 	_ = faker.AddProvider("accountStatus", func(v reflect.Value) (interface{}, error) {
-		as := usecase.GetSupportedAccountStatus()
-		s := rand.NewSource(time.Now().UnixNano())
-		r := rand.New(s)
-
-		idx := r.Intn(len(as) - 1)
-
-		return as[idx], nil
+		return "ACTIVE", nil
 	})
 
 	_ = faker.AddProvider("accountCOA", func(v reflect.Value) (interface{}, error) {

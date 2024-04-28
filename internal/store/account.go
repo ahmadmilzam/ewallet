@@ -37,25 +37,6 @@ const (
 	WHERE account.phone = $1`
 )
 
-func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
-	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
-	if err, ok := err.(*pq.Error); ok {
-		// Here err is of type *pq.Error, you may inspect all its fields, e.g.:
-		fmt.Println("pq error:", err)
-		fmt.Println("pq error:", err.Code.Name())
-		/*
-			pq error: pq: duplicate key value violates unique constraint "accounts_pkey"
-			pq error: unique_violation
-		*/
-	}
-	if err != nil {
-		err = fmt.Errorf("CreateAccount: %w", err)
-		return nil, err
-	}
-
-	return account, nil
-}
-
 func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account, wallets []entity.Wallet, counter *entity.TransferCounter) error {
 
 	err := s.execTx(func(q *Queries) error {
@@ -89,6 +70,16 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account,
 	})
 
 	return err
+}
+
+func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
+	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
+	if err != nil {
+		err = fmt.Errorf("CreateAccount: %w", err)
+		return nil, err
+	}
+
+	return account, nil
 }
 
 func (s *Queries) UpdateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {

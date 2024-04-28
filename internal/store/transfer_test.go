@@ -1,4 +1,4 @@
-package store
+package store_test
 
 import (
 	"context"
@@ -8,26 +8,35 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 	"github.com/ahmadmilzam/ewallet/pkg/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 	transferType := "TOPUP"
-	amount := int64(10000)
+	amount := int64(1000)
 	srcBalance := int64(0)
 	dstBalance := int64(0)
-	n := 10
+	n := 2
 	errs := make(chan error)
-	results := make(chan string)
+	results := make(chan entity.Transfer)
 
 	walletSrc := entity.Wallet{
 		ID:           "001",
-		AccountPhone: "+62123123123",
+		AccountPhone: "+62000000001",
 		Balance:      0,
 		Type:         "ASSETS",
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
-	_, dstWallets, _, _ := CreateAccount()
+
+	walletDst := entity.Wallet{
+		ID:           "002",
+		AccountPhone: "+62000000002",
+		Balance:      0,
+		Type:         "LIABILITIES",
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
 
 	for i := 0; i < n; i++ {
 		fmt.Println("index: ", i)
@@ -41,7 +50,7 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 			transfer := &entity.Transfer{
 				ID:          transferId,
 				SrcWalletID: walletSrc.ID,
-				DstWalletID: dstWallets[0].ID,
+				DstWalletID: walletDst.ID,
 				Amount:      amount,
 				Reference:   reference,
 				Type:        transferType,
@@ -66,7 +75,7 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 
 			dstEntry := entity.Entry{
 				ID:            uuid.New().String(),
-				WalletID:      dstWallets[0].ID,
+				WalletID:      walletDst.ID,
 				CreditAmount:  amount,
 				DebitAmount:   0,
 				BalanceBefore: dstBalance,
@@ -86,7 +95,7 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 			}
 
 			dstWalletUpdated := entity.WalletUpdateBalance{
-				ID:        dstWallets[0].ID,
+				ID:        walletDst.ID,
 				Amount:    amount,
 				UpdatedAt: now,
 			}
@@ -111,11 +120,16 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 			)
 
 			errs <- err
-			results <- "ok"
+			results <- *transfer
 
 			srcBalance = srcBalance - amount
 			dstBalance = dstBalance + amount
 
 		}()
+	}
+
+	for i := 0; i < n; i++ {
+		err := <-errs
+		assert.NoError(t, err)
 	}
 }

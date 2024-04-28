@@ -1,4 +1,4 @@
-package store
+package store_test
 
 import (
 	"log"
@@ -6,10 +6,11 @@ import (
 	"testing"
 
 	"github.com/ahmadmilzam/ewallet/config"
+	"github.com/ahmadmilzam/ewallet/internal/store"
 	"github.com/ahmadmilzam/ewallet/pkg/pgclient"
 )
 
-var testStore *SQLStore
+var testStore *store.SQLStore
 
 func TestMain(m *testing.M) {
 	_ = config.Load("config", "../../config")
@@ -19,9 +20,9 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot ping db: ", err)
 	}
 
-	testStore = &SQLStore{
+	testStore = &store.SQLStore{
 		DB:      sql,
-		Queries: NewQueries(sql),
+		Queries: store.NewQueries(sql),
 	}
 
 	os.Exit(m.Run())

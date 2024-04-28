@@ -1,4 +1,4 @@
-package store
+package store_test
 
 import (
 	"context"
@@ -23,13 +23,13 @@ func CreateAccount() (entity.Account, []entity.Wallet, entity.TransferCounter, e
 	account.CreatedAt = now
 	account.UpdatedAt = now
 
-	wallets := createWalletForAccount(account.Phone)
-	counter := createTransferCounter(wallets[0].ID)
+	wallets := createWalletForAccountt(account.Phone)
+	counter := createTransferCounterr(wallets[0].ID)
 
 	return account, wallets, counter, nil
 }
 
-func createWalletForAccount(phone string) []entity.Wallet {
+func createWalletForAccountt(phone string) []entity.Wallet {
 	var wallets []entity.Wallet
 
 	now := time.Now()
@@ -55,7 +55,7 @@ func createWalletForAccount(phone string) []entity.Wallet {
 	return wallets
 }
 
-func createTransferCounter(walletID string) entity.TransferCounter {
+func createTransferCounterr(walletID string) entity.TransferCounter {
 	return entity.TransferCounter{
 		WalletId:            walletID,
 		CreditCountDaily:    0,

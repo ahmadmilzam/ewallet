@@ -12,7 +12,7 @@ type WalletQuery interface {
 	UpdateWalletBalance(ctx context.Context, wallet *WalletUpdateBalance) error
 	FindWalletById(ctx context.Context, id string) (*Wallet, error)
 	FindWalletForUpdateById(ctx context.Context, id string) (*Wallet, error)
-	FindWalletsByPhone(ctx context.Context, p string) ([]Wallet, error)
+	FindWalletsByPhone(ctx context.Context, phone string) ([]Wallet, error)
 }
 
 type Wallet struct {

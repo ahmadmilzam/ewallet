@@ -20,6 +20,7 @@ func NewWalletRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
 	{
 		// h.POST("/", route.createWallet)
 		h.GET("/:id", route.getWallet)
+		h.GET("/phone/:phone", route.getWalletsByPhone)
 	}
 }
 
@@ -39,7 +40,46 @@ func (route *WalletRoute) getWallet(ctx *gin.Context) {
 		return
 	}
 
-	account, err := route.usecase.GetWallets(c, id)
+	account, err := route.usecase.GetWallet(c, id)
+
+	if err != nil {
+		var msg string
+		sc := httpres.GetStatusCode(err)
+		if sc >= 500 {
+			msg = "Internal server error"
+		} else {
+			msg = "Wallet not found"
+		}
+
+		ctx.Set("msg", "Unable to get wallet")
+		ctx.Set("err", err)
+		ctx.JSON(
+			sc,
+			httpres.GenerateErrResponse(err, msg),
+		)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, httpres.GenerateOkResponse(account))
+}
+
+func (route *WalletRoute) getWalletsByPhone(ctx *gin.Context) {
+	c := context.Background()
+	phone := ctx.Param("phone")
+
+	if err := ctx.ShouldBindUri(&phone); err != nil {
+		err = fmt.Errorf("%s: getWalletsByPhone: %w", httpres.GenericBadRequest, err)
+
+		ctx.Set("msg", "Fail to parse request data")
+		ctx.Set("err", err)
+		ctx.JSON(
+			httpres.GetStatusCode(err),
+			httpres.GenerateErrResponse(err, "Fail to parse request"),
+		)
+		return
+	}
+
+	account, err := route.usecase.GetWallets(c, phone)
 
 	if err != nil {
 		var msg string

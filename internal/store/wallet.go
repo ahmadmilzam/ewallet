@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/lib/pq"
 )
 
 const (
@@ -62,7 +63,10 @@ func (s *Queries) UpdateWalletBalance(ctx context.Context, wallet *entity.Wallet
 		return fmt.Errorf("UpdateWalletBalance: %w", err)
 	}
 
-	affected, _ := results.RowsAffected()
+	affected, err := results.RowsAffected()
+	if err != nil {
+		return errors.New("UpdateWalletBalance: RowsAffected: fail, unsupported operation")
+	}
 	if affected <= 0 {
 		return errors.New("UpdateWalletBalance: fail, no rows updated")
 	}
@@ -71,13 +75,14 @@ func (s *Queries) UpdateWalletBalance(ctx context.Context, wallet *entity.Wallet
 }
 
 func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet, error) {
-	var mw entity.Wallet
-	err := s.db.GetContext(ctx, &mw, FindWalletByIdSQL, id)
+	var wallet = &entity.Wallet{}
+	err := s.db.GetContext(ctx, wallet, FindWalletByIdSQL, id)
+
 	if err != nil {
-		return nil, fmt.Errorf("FindWalletById: %w", err)
+		return nil, err
 	}
 
-	return &mw, nil
+	return wallet, nil
 }
 
 func (s *Queries) FindWalletForUpdateById(ctx context.Context, id string) (*entity.Wallet, error) {
@@ -90,13 +95,29 @@ func (s *Queries) FindWalletForUpdateById(ctx context.Context, id string) (*enti
 	return &mw, nil
 }
 
-func (s *Queries) FindWalletsByPhone(ctx context.Context, p string) ([]entity.Wallet, error) {
-	var amw []entity.Wallet
+func (s *Queries) FindWalletsByPhone(ctx context.Context, phone string) ([]entity.Wallet, error) {
+	var wallets []entity.Wallet
 
-	err := s.db.SelectContext(ctx, &amw, FindWalletByPhoneSQL, p)
+	err := s.db.SelectContext(ctx, &wallets, FindWalletByPhoneSQL, phone)
+
 	if err != nil {
-		return nil, fmt.Errorf("FindWalletsByPhone: %w", err)
+		if err, ok := err.(*pq.Error); ok {
+			fmt.Println("pq error:", err)
+			fmt.Println("pq error:", err.Code.Name())
+			/*
+				pq error: pq: duplicate key value violates unique constraint "accounts_pkey"
+				pq error: unique_violation
+			*/
+			switch err.Code.Name() {
+			case "unique_violation":
+				return nil, ErrUniqueViolation
+
+			}
+		}
+
+		fmt.Println("non pq error:", err)
+		return nil, err
 	}
 
-	return amw, nil
+	return wallets, nil
 }

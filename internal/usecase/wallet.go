@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
@@ -9,61 +11,42 @@ import (
 )
 
 type WalletUsecaseInterface interface {
-	// CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error)
-	GetWallets(ctx context.Context, p string) ([]WalletResBody, error)
+	GetWallet(ctx context.Context, id string) (*WalletResBody, error)
+	GetWallets(ctx context.Context, phone string) ([]WalletResBody, error)
 }
 
-// func (u *AppUsecase) CreateWallet(ctx context.Context, params CreateAccountReqParams) (entity.Account, entity.Wallet, error) {
-
-// 	aID := uuid.New().String()
-// 	wID := uuid.New().String()
-// 	cAt := time.Now()
-// 	uAt := time.Now()
-
-// 	ac := entity.Account{
-// 		ID:        aID,
-// 		Name:      params.Name,
-// 		Phone:     params.Phone,
-// 		Email:     params.Email,
-// 		Role:      "REGISTERED",
-// 		Status:    "ACTIVE",
-// 		CreatedAt: cAt,
-// 		UpdatedAt: uAt,
-// 	}
-
-// 	wl := entity.Wallet{
-// 		ID:        wID,
-// 		AccountId: aID,
-// 		Balance:   0.00,
-// 		Type:      "CASH",
-// 		CreatedAt: cAt,
-// 		UpdatedAt: uAt,
-// 	}
-
-// 	err := u.store.CreateAccountTx(ctx, ac, wl)
-
-// 	if err != nil {
-// 		return entity.Account{}, entity.Wallet{}, err
-// 	}
-
-// 	return ac, wl, nil
-// }
-
-func (u *AppUsecase) GetWallets(ctx context.Context, p string) ([]WalletResBody, error) {
-	wallets, err := u.store.FindWalletsByPhone(ctx, p)
+func (u *AppUsecase) GetWallet(ctx context.Context, id string) (*WalletResBody, error) {
+	wallet, err := u.store.FindWalletById(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", httpres.GenericInternalError, err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%s: GetWallet: %w", httpres.GenericNotFound, err)
+		}
+
+		return nil, fmt.Errorf("%s: GetWallet: FindWalletById: %w", httpres.GenericInternalError, err)
+	}
+
+	return &WalletResBody{
+		ID:           wallet.ID,
+		AccountPhone: wallet.AccountPhone,
+		Type:         wallet.Type,
+		Balance:      wallet.Balance,
+	}, nil
+}
+
+func (u *AppUsecase) GetWallets(ctx context.Context, phone string) ([]WalletResBody, error) {
+	wallets, err := u.store.FindWalletsByPhone(ctx, phone)
+	if err != nil {
+		return nil, fmt.Errorf("%s: FindWalletsByPhone: %w", httpres.GenericInternalError, err)
 	}
 
 	if len(wallets) == 0 {
-		err = fmt.Errorf("%s: GetWallet", httpres.GenericNotFound)
-		return nil, err
+		return nil, fmt.Errorf("%s: GetWallets: no results %s", httpres.GenericNotFound, phone)
 	}
 
-	return u.mapGetWalletsResponse(wallets), nil
+	return u.mapGetWalletsSuccessResponse(wallets), nil
 }
 
-func (u *AppUsecase) mapGetWalletsResponse(wallets []entity.Wallet) []WalletResBody {
+func (u *AppUsecase) mapGetWalletsSuccessResponse(wallets []entity.Wallet) []WalletResBody {
 	res := []WalletResBody{}
 
 	for _, w := range wallets {
