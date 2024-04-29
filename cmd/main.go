@@ -30,7 +30,8 @@ func main() {
 
 	cliApp := &cli.App{}
 
-	_ = config.Load("config", "./config")
+	_ = config.Load("config", ".")
+	fmt.Println("Incoming request to main bin")
 	appConfig := config.GetAppConfig()
 	dbConfig := config.GetDBConfig()
 	migrate := migration.CreateMigrate(dbConfig.Name)
@@ -54,9 +55,10 @@ func main() {
 				handler.Use(gin.Recovery())
 				api.NewRouter(handler, appUsecase)
 
-				httpServer := httpserver.New(handler, httpserver.Port(appConfig.Port))
+				httpServer := httpserver.New(handler, httpserver.WithPort(appConfig.Port))
 				httpServer.Start()
-				// Waiting signal -.
+
+				// Waiting signal
 				interrupt := make(chan os.Signal, 1)
 				signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
