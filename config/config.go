@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -29,28 +28,14 @@ type AccountConfig struct {
 	CreditAmountMonthlyLimit int64 `mapstructure:"credit_amount_monthly_limit"`
 }
 
-type StatsDConfig struct {
-	Host string `mapstructure:"host"`
-	Port string `mapstructure:"port"`
+type LogConfig struct {
+	Level string `mapstructure:"level"`
 }
-
-type DatadogConfig struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Env     string `mapstructure:"env"`
-	Name    string `mapstructure:"service"`
-	Version string `mapstructure:"version"`
-}
-
-// type SentryConfig struct {
-// 	Enabled bool   `mapstructure:"enabled"`
-// 	DSN     string `mapstructure:"dsn"`
-// }
 
 type config struct {
-	App      AppConfig     `mapstructure:"app"`
-	StatsD   StatsDConfig  `mapstructure:"statsd"`
-	Datadog  DatadogConfig `mapstructure:"datadog"`
-	DBConfig DBConfig      `mapstructure:"database"`
+	App      AppConfig `mapstructure:"app"`
+	Log      LogConfig `mapstructure:"log"`
+	DBConfig DBConfig  `mapstructure:"database"`
 }
 
 func Load(cfgName, path string) error {
@@ -68,18 +53,10 @@ func GetAppConfig() AppConfig {
 	return c.App
 }
 
-func GetDatadogConfig() DatadogConfig {
-	return c.Datadog
+func GetLogConfig() LogConfig {
+	return c.Log
 }
-
-// func GetSentry() SentryConfig {
-// 	return c.Sentry
-// }
 
 func GetDBConfig() DBConfig {
 	return c.DBConfig
-}
-
-func GetStatsDAddress() string {
-	return fmt.Sprintf("%s:%s", c.StatsD.Host, c.StatsD.Port)
 }

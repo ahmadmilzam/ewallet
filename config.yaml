@@ -15,17 +15,13 @@ app:
       credit_count_monthly_limit: 20
       credit_amount_daily_limit: 20000000
       credit_amount_monthly_limit: 40000000
+
+log:
+  level: 'debug'
+
 database:
   host: 'localhost'
   name: 'ewallet'
   username: 'postgres'
   port: '5432'
   password: 'password'
-statsd:
-  host: '127.0.0.1'
-  port: '8125'
-datadog:
-  enabled: 'false'
-  env: 'staging'
-  service: 'ewallet'
-  version: '0.0.1'

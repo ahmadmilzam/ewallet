@@ -6,8 +6,6 @@ import (
 	"slices"
 )
 
-// "gitlab.com/flip-id/go-core/middleware/server"
-
 const (
 	timeFormat       = "2006-01-02T15:04:05.000"
 	maskedString     = "*"
