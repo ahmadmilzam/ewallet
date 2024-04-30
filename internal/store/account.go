@@ -37,41 +37,6 @@ const (
 	WHERE account.phone = $1`
 )
 
-func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account, wallets []entity.Wallet, counter *entity.TransferCounter) error {
-
-	err := s.execTx(func(q *Queries) error {
-		var err error
-
-		_, err = q.CreateAccount(ctx, account)
-		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
-		}
-
-		_, err = q.CreateWallet(ctx, &wallets[0])
-		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
-		}
-
-		_, err = q.CreateWallet(ctx, &wallets[1])
-		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
-		}
-
-		_, err = q.CreateCounter(ctx, counter)
-		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
-		}
-
-		return err
-	})
-
-	return err
-}
-
 func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
 	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
 	if err != nil {
@@ -90,15 +55,6 @@ func (s *Queries) UpdateAccount(ctx context.Context, account *entity.Account) (*
 	}
 
 	return account, nil
-}
-
-func (s *Queries) DeleteAccount(ctx context.Context, id string) error {
-	_, err := s.db.NamedExecContext(ctx, deleteAccountByIdSQL, id)
-	if err != nil {
-		return fmt.Errorf("DeleteAccount: %w", err)
-	}
-
-	return nil
 }
 
 func (s *Queries) FindAccountForUpdateById(ctx context.Context, phone string) (*entity.Account, error) {

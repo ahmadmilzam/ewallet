@@ -16,11 +16,11 @@ type AccountQuery interface {
 }
 
 type Account struct {
-	Phone     string    `db:"phone" faker:"customphone,unique"`
-	Name      string    `db:"name" faker:"name,unique"`
-	Email     string    `db:"email" faker:"email,unique"`
-	Role      string    `db:"role" faker:"accountRole"`
-	Status    string    `db:"status" faker:"accountStatus"`
+	Phone     string    `db:"phone"`
+	Name      string    `db:"name"`
+	Email     string    `db:"email"`
+	Role      string    `db:"role"`
+	Status    string    `db:"status"`
 	COAType   string    `db:"coa_type"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`

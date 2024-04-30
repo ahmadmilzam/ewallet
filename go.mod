@@ -3,7 +3,6 @@ module github.com/ahmadmilzam/ewallet
 go 1.22.1
 
 require (
-	github.com/dongri/phonenumber v0.1.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-faker/faker/v4 v4.4.1
 	github.com/golang-migrate/migrate/v4 v4.17.0

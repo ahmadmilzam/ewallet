@@ -1,7 +1,10 @@
 package store
 
 import (
+	"context"
 	"fmt"
+
+	"github.com/ahmadmilzam/ewallet/internal/entity"
 )
 
 func (s *SQLStore) execTx(fn func(*Queries) error) error {
@@ -20,4 +23,78 @@ func (s *SQLStore) execTx(fn func(*Queries) error) error {
 	}
 
 	return tx.Commit()
+}
+
+func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account, wallets []entity.Wallet, counter *entity.TransferCounter) error {
+
+	err := s.execTx(func(q *Queries) error {
+		var err error
+
+		_, err = q.CreateAccount(ctx, account)
+		if err != nil {
+			err = fmt.Errorf("CreateAccountTx: %w", err)
+			return err
+		}
+
+		_, err = q.CreateWallet(ctx, &wallets[0])
+		if err != nil {
+			err = fmt.Errorf("CreateAccountTx: %w", err)
+			return err
+		}
+
+		_, err = q.CreateWallet(ctx, &wallets[1])
+		if err != nil {
+			err = fmt.Errorf("CreateAccountTx: %w", err)
+			return err
+		}
+
+		_, err = q.CreateCounter(ctx, counter)
+		if err != nil {
+			err = fmt.Errorf("CreateAccountTx: %w", err)
+			return err
+		}
+
+		return err
+	})
+
+	return err
+}
+
+func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets []entity.WalletUpdateBalance, counter *entity.UpdateTransferCounter) error {
+
+	err := s.execTx(func(q *Queries) error {
+		var err error
+
+		_, err = q.CreateTransfer(ctx, transfer)
+		if err != nil {
+			err = fmt.Errorf("CreateTransferTx: %w", err)
+			return err
+		}
+
+		for _, entry := range entries {
+			_, err = q.CreateEntry(ctx, &entry)
+			if err != nil {
+				err = fmt.Errorf("CreateTransferTx: %w", err)
+				return err
+			}
+		}
+
+		for _, wallet := range wallets {
+			err = q.UpdateWalletBalance(ctx, &wallet)
+			if err != nil {
+				err = fmt.Errorf("CreateTransferTx: %w", err)
+				return err
+			}
+		}
+
+		err = q.UpdateCounter(ctx, counter)
+		if err != nil {
+			err = fmt.Errorf("CreateTransferTx: %w", err)
+			return err
+		}
+
+		return err
+	})
+
+	return err
 }

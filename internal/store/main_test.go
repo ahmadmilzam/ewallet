@@ -13,7 +13,7 @@ import (
 var testStore *store.SQLStore
 
 func TestMain(m *testing.M) {
-	_ = config.Load("config", "../../config")
+	_ = config.Load("config", "../../")
 	sql := pgclient.New()
 
 	if err := sql.DB.Ping(); err != nil {

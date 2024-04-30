@@ -7,11 +7,14 @@ import (
 	"time"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/uuid"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestStoreTransfer_CreateTransferTx(t *testing.T) {
+func TestTestExecTx_CreateTransferTx(t *testing.T) {
 	transferType := "TOPUP"
 	amount := int64(1000)
 	srcBalance := int64(0)
@@ -132,4 +135,67 @@ func TestStoreTransfer_CreateTransferTx(t *testing.T) {
 		err := <-errs
 		assert.NoError(t, err)
 	}
+}
+
+func createAccount() (entity.Account, []entity.Wallet, entity.TransferCounter) {
+	now := time.Now()
+	account := entity.Account{
+		Phone:     faker.E164PhoneNumber(),
+		Name:      faker.FirstName(),
+		Email:     faker.Email(),
+		Role:      usecase.AccountRoleRegistered,
+		Status:    usecase.AccountStatusActive,
+		COAType:   usecase.AccountCOATypeLiabilities,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	wallets := createWalletForAccountt(account.Phone)
+	counter := createTransferCounterr(wallets[0].ID)
+
+	return account, wallets, counter
+}
+
+func createWalletForAccountt(phone string) []entity.Wallet {
+	var wallets []entity.Wallet
+
+	now := time.Now()
+	cash := entity.Wallet{
+		ID:           faker.UUIDDigit(),
+		AccountPhone: phone,
+		Balance:      0,
+		Type:         usecase.WalletTypeCash,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	point := entity.Wallet{
+		ID:           faker.UUIDDigit(),
+		AccountPhone: phone,
+		Balance:      0,
+		Type:         usecase.WalletTypePoint,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	wallets = append(wallets, cash, point)
+	return wallets
+}
+
+func createTransferCounterr(walletID string) entity.TransferCounter {
+	return entity.TransferCounter{
+		WalletId:            walletID,
+		CreditCountDaily:    0,
+		CreditCountMonthly:  0,
+		CreditAmountDaily:   0,
+		CreditAmountMonthly: 0,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
+	}
+}
+
+func TestExecTx_CreateAccountTx(t *testing.T) {
+	account, wallets, counter := createAccount()
+	err1 := testStore.CreateAccountTx(context.Background(), &account, wallets, &counter)
+	require.NoError(t, err1)
 }
