@@ -21,7 +21,6 @@ type Server struct {
 	shutdownTimeout time.Duration
 }
 
-// New -.
 func New(handler http.Handler, opts ...Option) *Server {
 	httpServer := &http.Server{
 		Handler:      handler,
@@ -36,7 +35,7 @@ func New(handler http.Handler, opts ...Option) *Server {
 		shutdownTimeout: defaultShutdownTimeout,
 	}
 
-	// Custom options -.
+	// Custom options
 	for _, opt := range opts {
 		opt(s)
 	}

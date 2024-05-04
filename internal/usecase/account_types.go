@@ -1,50 +1,46 @@
 package usecase
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/ahmadmilzam/ewallet/pkg/array"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
+	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
 	"github.com/ahmadmilzam/ewallet/pkg/validator"
 )
 
-type CreateAccountReqParams struct {
+type CreateAccountRequest struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`
 	Email   string `json:"email"`
 	COAType string `json:"coa_type"`
 }
 
-func (params *CreateAccountReqParams) Validate() (bool, error) {
-	var err error
+func (params *CreateAccountRequest) Validate() *httperrors.Error {
+	if params.Name == "" {
+		return httperrors.GenerateError(httperrors.GenericBadRequest, "Params {name} is required")
+	}
+	if params.Phone == "" {
+		return httperrors.GenerateError(httperrors.GenericBadRequest, "Params {phone} is required")
+	}
+	if params.Email == "" {
+		return httperrors.GenerateError(httperrors.GenericBadRequest, "Params {email} is required")
+	}
+	if params.COAType == "" {
+		return httperrors.GenerateError(httperrors.GenericBadRequest, "Params {coa_type} is required")
+	}
 
 	if !validator.IsValidEmail(params.Email) {
-		err = errors.New("CreateAccount: invalid amount params email")
-		err = fmt.Errorf("%s: %w", httpres.InvalidAmount, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.InvalidEmail, "Invalid params {email}")
 	}
-
 	if !validator.IsValidPhone(params.Phone) {
-		err = errors.New("CreateAccount: invalid req params phone")
-		err = fmt.Errorf("%s: %w", httpres.InvalidPhone, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.InvalidPhone, "Invalid params {phone}")
 	}
-
 	if !array.Contains(GetSupportedAccountCOA(), params.COAType) {
-		err = errors.New("CreateAccount: invalid coa type")
-		err = fmt.Errorf("%s: %w", httpres.InvalidCOAType, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.InvalidCOAType, "Invalid params {coa_type}")
 	}
 
-	return true, nil
+	return nil
 }
 
-type GetAccountReqParams struct {
-	Phone string `uri:"phone"`
-}
-
-type AccountWalletsResBody struct {
+type AccountWalletData struct {
 	Phone     string          `json:"phone"`
 	Name      string          `json:"name"`
 	Email     string          `json:"email"`
@@ -54,6 +50,18 @@ type AccountWalletsResBody struct {
 	CreatedAt JSONTime        `json:"created_at"`
 	UpdatedAt JSONTime        `json:"updated_at"`
 	Wallets   []WalletSummary `json:"wallets"`
+}
+
+type CreateAccountResponse struct {
+	Success bool               `json:"success"`
+	Error   *httperrors.Error  `json:"error,omitempty"`
+	Data    *AccountWalletData `json:"data,omitempty"`
+}
+
+type GetAccountResponse struct {
+	Success bool               `json:"success"`
+	Error   *httperrors.Error  `json:"error,omitempty"`
+	Data    *AccountWalletData `json:"data,omitempty"`
 }
 
 type WalletSummary struct {

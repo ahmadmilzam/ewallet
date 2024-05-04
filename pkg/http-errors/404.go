@@ -1,4 +1,4 @@
-package httpres
+package httperrors
 
 const (
 	GenericNotFound    string = "40400"

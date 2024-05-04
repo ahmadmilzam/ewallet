@@ -1,4 +1,4 @@
-package httpres
+package httperrors
 
 const (
 	GenericConflict         string = "40900"

@@ -1,15 +1,6 @@
 package v1
 
-import (
-	"context"
-	"fmt"
-	"net/http"
-
-	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
-	"github.com/gin-gonic/gin"
-)
-
+/*
 type TransferRoute struct {
 	usecase usecase.AppUsecaseInterface
 }
@@ -28,13 +19,13 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 	params := &usecase.TransferRequestParams{}
 
 	if err := ctx.ShouldBindJSON(params); err != nil {
-		err = fmt.Errorf("%s: createTransfer fail to parse request: %w", httpres.GenericBadRequest, err)
+		err = fmt.Errorf("%s: createTransfer fail to parse request: %w", appErr.GenericBadRequest, err)
 
 		ctx.Set("msg", "Fail to parse request data")
 		ctx.Set("err", err)
 		ctx.JSON(
-			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, "Fail to parse request"),
+			appErr.GetStatusCode(err),
+			appErr.GenerateErrResponse(err, "Fail to parse request"),
 		)
 		return
 	}
@@ -45,8 +36,8 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 		ctx.Set("msg", msg)
 		ctx.Set("err", err)
 		ctx.JSON(
-			httpres.GetStatusCode(err),
-			httpres.GenerateErrResponse(err, msg),
+			appErr.GetStatusCode(err),
+			appErr.GenerateErrResponse(err, msg),
 		)
 		return
 	}
@@ -55,7 +46,7 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 
 	if err != nil {
 		var msg string
-		sc := httpres.GetStatusCode(err)
+		sc := appErr.GetStatusCode(err)
 		if sc >= 500 {
 			msg = "Internal server error"
 		} else {
@@ -66,10 +57,11 @@ func (route *TransferRoute) createTransfer(ctx *gin.Context) {
 		ctx.Set("err", err)
 		ctx.JSON(
 			sc,
-			httpres.GenerateErrResponse(err, msg),
+			appErr.GenerateErrResponse(err, msg),
 		)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpres.GenerateOkResponse(transferResponse))
+	ctx.JSON(http.StatusOK, appErr.GenerateOkResponse(transferResponse))
 }
+*/

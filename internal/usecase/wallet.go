@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
+	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
 )
 
 type WalletUsecaseInterface interface {
@@ -19,10 +19,10 @@ func (u *AppUsecase) GetWallet(ctx context.Context, id string) (*WalletResBody, 
 	wallet, err := u.store.FindWalletById(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: GetWallet: %w", httpres.GenericNotFound, err)
+			return nil, fmt.Errorf("%s: GetWallet: %w", httperrors.GenericNotFound, err)
 		}
 
-		return nil, fmt.Errorf("%s: GetWallet: FindWalletById: %w", httpres.GenericInternalError, err)
+		return nil, fmt.Errorf("%s: GetWallet: FindWalletById: %w", httperrors.GenericInternalError, err)
 	}
 
 	return &WalletResBody{
@@ -36,11 +36,11 @@ func (u *AppUsecase) GetWallet(ctx context.Context, id string) (*WalletResBody, 
 func (u *AppUsecase) GetWallets(ctx context.Context, phone string) ([]WalletResBody, error) {
 	wallets, err := u.store.FindWalletsByPhone(ctx, phone)
 	if err != nil {
-		return nil, fmt.Errorf("%s: FindWalletsByPhone: %w", httpres.GenericInternalError, err)
+		return nil, fmt.Errorf("%s: FindWalletsByPhone: %w", httperrors.GenericInternalError, err)
 	}
 
 	if len(wallets) == 0 {
-		return nil, fmt.Errorf("%s: GetWallets: no results %s", httpres.GenericNotFound, phone)
+		return nil, fmt.Errorf("%s: GetWallets: no results %s", httperrors.GenericNotFound, phone)
 	}
 
 	return u.mapGetWalletsSuccessResponse(wallets), nil

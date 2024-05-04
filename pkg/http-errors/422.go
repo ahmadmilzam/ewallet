@@ -1,4 +1,4 @@
-package httpres
+package httperrors
 
 var (
 	GenericUnprocessable  string = "42200"

@@ -2,32 +2,44 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/ahmadmilzam/ewallet/pkg/httpres"
+	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
+	"github.com/ahmadmilzam/ewallet/pkg/logger"
 	"github.com/ahmadmilzam/ewallet/pkg/uuid"
 )
 
 type AccountUsecaseInterface interface {
-	CreateAccount(ctx context.Context, params CreateAccountReqParams) (*AccountWalletsResBody, error)
-	GetAccount(ctx context.Context, phone string) (*AccountWalletsResBody, error)
+	CreateAccount(ctx context.Context, params CreateAccountRequest) *CreateAccountResponse
+	GetAccount(ctx context.Context, phone string) *GetAccountResponse
 }
 
-func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams) (*AccountWalletsResBody, error) {
+func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountRequest) *CreateAccountResponse {
+	var err error
+
+	validationErr := params.Validate()
+	if validationErr != nil {
+		msg := "Fail to create account"
+		slog.Warn(msg, logger.ErrAttr(err))
+		return &CreateAccountResponse{
+			Success: false,
+			Error:   validationErr,
+		}
+	}
+
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
 	account := &entity.Account{
-		Name:      p.Name,
-		Phone:     p.Phone,
-		Email:     p.Email,
+		Name:      params.Name,
+		Phone:     params.Phone,
+		Email:     params.Email,
 		Role:      "REGISTERED",
 		Status:    "ACTIVE",
-		COAType:   p.COAType,
+		COAType:   params.COAType,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
@@ -36,7 +48,7 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams
 
 	walletCash := entity.Wallet{
 		ID:           uuid.New().String(),
-		AccountPhone: p.Phone,
+		AccountPhone: params.Phone,
 		Balance:      0.00,
 		Type:         "CASH",
 		CreatedAt:    createdAt,
@@ -45,7 +57,7 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams
 
 	walletPoint := entity.Wallet{
 		ID:           uuid.New().String(),
-		AccountPhone: p.Phone,
+		AccountPhone: params.Phone,
 		Balance:      0.00,
 		Type:         "POINT",
 		CreatedAt:    createdAt,
@@ -64,15 +76,26 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams
 		UpdatedAt:           updatedAt,
 	}
 
-	err := u.store.CreateAccountTx(ctx, account, wallets, counter)
-	if err != nil {
-		err = fmt.Errorf("%s: CreateAccount: %w", httpres.GenericInternalError, err)
+	err = u.store.CreateAccountTx(ctx, account, wallets, counter)
 
-		if strings.Contains(err.Error(), "duplicreatedAte key value violates unique constraint") {
-			err = fmt.Errorf("%s: CreateAccount: account exists: %w", httpres.DataDuplication, err)
+	if err != nil {
+		msg := "Fail to create new account, account existed"
+		if strings.Contains(err.Error(), "violates unique constraint") {
+			slog.Error(msg, logger.ErrAttr(err))
+			return &CreateAccountResponse{
+				Success: false,
+				Error:   httperrors.GenerateError(httperrors.DataDuplication, msg),
+			}
 		}
-		return nil, err
+		msg = "Fail to create new account"
+		slog.Error(msg, logger.ErrAttr(err))
+
+		return &CreateAccountResponse{
+			Success: false,
+			Error:   httperrors.GenerateError(httperrors.GenericInternalError, msg),
+		}
 	}
+
 	accountWallets := []entity.AccountWallet{}
 	walletCashS := entity.Wallet{
 		ID:      walletCash.ID,
@@ -95,30 +118,47 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, p CreateAccountReqParams
 		},
 	)
 
-	response := u.mapCreateAccountWalletResponse(accountWallets)
+	data := u.mapCreateAccountWalletResponse(accountWallets)
 
-	return response, nil
+	return &CreateAccountResponse{
+		Success: true,
+		Data:    data,
+	}
 }
 
-func (u *AppUsecase) GetAccount(ctx context.Context, phone string) (*AccountWalletsResBody, error) {
+func (u *AppUsecase) GetAccount(ctx context.Context, phone string) *GetAccountResponse {
 	accountWallets, err := u.store.FindAccountAndWalletsById(ctx, phone)
 
 	if err != nil {
-		return nil, fmt.Errorf("%s: GetAccount: %w", httpres.GenericInternalError, err)
+		msg := "Fail to get account"
+		slog.Error(msg, logger.ErrAttr(err))
+
+		return &GetAccountResponse{
+			Success: false,
+			Error:   httperrors.GenerateError(httperrors.GenericInternalError, msg),
+		}
 	}
 
 	if len(accountWallets) == 0 {
-		err = errors.New("no rows in result set")
-		return nil, fmt.Errorf("%s: GetAccount: %s : %w", httpres.GenericNotFound, phone, err)
+		msg := "Account not found"
+		slog.Error(msg, logger.ErrAttr(err))
+
+		return &GetAccountResponse{
+			Success: false,
+			Error:   httperrors.GenerateError(httperrors.GenericNotFound, msg),
+		}
 	}
 
-	response := u.mapCreateAccountWalletResponse(accountWallets)
+	data := u.mapCreateAccountWalletResponse(accountWallets)
 
-	return response, nil
+	return &GetAccountResponse{
+		Success: true,
+		Data:    data,
+	}
 }
 
-func (u *AppUsecase) mapCreateAccountWalletResponse(feeder []entity.AccountWallet) *AccountWalletsResBody {
-	res := &AccountWalletsResBody{
+func (u *AppUsecase) mapCreateAccountWalletResponse(feeder []entity.AccountWallet) *AccountWalletData {
+	res := &AccountWalletData{
 		Phone:     feeder[0].Phone,
 		Name:      feeder[0].Name,
 		Email:     feeder[0].Email,

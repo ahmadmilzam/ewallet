@@ -1,4 +1,4 @@
-package httpres
+package httperrors
 
 const (
 	GenericUnauthorized string = "40100"

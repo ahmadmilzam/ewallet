@@ -5,14 +5,14 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/ahmadmilzam/ewallet/config"
-	"github.com/ahmadmilzam/ewallet/internal/api"
-	"github.com/ahmadmilzam/ewallet/internal/api/httpserver"
-	"github.com/ahmadmilzam/ewallet/internal/api/middleware"
+	restApi "github.com/ahmadmilzam/ewallet/internal/rest"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
-	"github.com/gin-gonic/gin"
+	"github.com/ahmadmilzam/ewallet/pkg/httpserver"
+	"github.com/gorilla/mux"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,16 +21,15 @@ func StartServer(config config.AppConfig, usecase usecase.AppUsecaseInterface) *
 
 	return &cli.Command{
 		Name:  "start",
-		Usage: "Starting up ewallet",
+		Usage: "Starting up application",
 		Action: func(c *cli.Context) error {
-			handler := gin.New()
-			handler.Use(middleware.RequestLog())
-			handler.Use(gin.Recovery())
-			api.NewRouter(handler, usecase)
+			router := mux.NewRouter()
+			restApi.RegisterRoutes(router, usecase)
 
-			httpServer := httpserver.New(handler, httpserver.WithPort(config.Port))
+			httpServer := httpserver.New(router, httpserver.WithPort(config.Port))
 			httpServer.Start()
 
+			slog.Info("Application started with runtime go version " + runtime.Version())
 			// Waiting signal
 			interrupt := make(chan os.Signal, 1)
 			signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
