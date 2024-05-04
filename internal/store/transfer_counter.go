@@ -13,6 +13,15 @@ var (
 	UpdateCounterSQL = `
 	UPDATE transfer_counters
 	SET
+		credit_count_daily = :credit_count_daily,
+		credit_count_monthly = :credit_count_monthly,
+		credit_amount_daily = :credit_amount_daily,
+		credit_amount_monthly = :credit_amount_monthly,
+		updated_at = :updated_at
+	WHERE wallet_id = :wallet_id`
+	UpdateCounterNoLockSQL = `
+	UPDATE transfer_counters
+	SET
 		credit_count_daily = credit_count_daily + :count_daily,
 		credit_count_monthly = credit_count_monthly + :count_monthly,
 		credit_amount_daily = credit_amount_daily + :amount_daily,
@@ -33,7 +42,7 @@ func (s *Queries) CreateCounter(ctx context.Context, counter *entity.TransferCou
 	return counter, nil
 }
 
-func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.UpdateTransferCounter) error {
+func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.TransferCounter) error {
 	_, err := s.db.NamedExecContext(ctx, UpdateCounterSQL, counter)
 
 	if err != nil {
@@ -46,7 +55,6 @@ func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.UpdateTrans
 func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {
 	counter := &entity.TransferCounter{}
 	err := s.db.GetContext(ctx, counter, FindCounterByIdSQL, id)
-	fmt.Println("Counter data: ", counter)
 	if err != nil {
 		return nil, fmt.Errorf("FindCounterById: %w", err)
 	}
@@ -55,11 +63,11 @@ func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.Trans
 }
 
 func (s *Queries) FindCounterForUpdateById(ctx context.Context, id string) (*entity.TransferCounter, error) {
-	var tc *entity.TransferCounter
-	err := s.db.GetContext(ctx, tc, FindCounterForUpdateByIdSQL, id)
+	counter := &entity.TransferCounter{}
+	err := s.db.GetContext(ctx, counter, FindCounterForUpdateByIdSQL, id)
 	if err != nil {
 		return nil, fmt.Errorf("FindCounterById: %w", err)
 	}
 
-	return tc, nil
+	return counter, nil
 }

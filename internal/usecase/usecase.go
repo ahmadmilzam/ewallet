@@ -7,8 +7,8 @@ import (
 
 type AppUsecaseInterface interface {
 	AccountUsecaseInterface
+	TransferUsecaseInterface
 	WalletUsecaseInterface
-	// TransferUsecaseInterface
 }
 
 type AppUsecase struct {

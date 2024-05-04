@@ -1,67 +1,43 @@
 package v1
 
-/*
-type TransferRoute struct {
+import (
+	"net/http"
+
+	"github.com/ahmadmilzam/ewallet/internal/usecase"
+	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
+	"github.com/ahmadmilzam/ewallet/pkg/httpserver"
+	"github.com/ahmadmilzam/ewallet/pkg/response"
+	"github.com/gorilla/mux"
+)
+
+type TransferHandler struct {
 	usecase usecase.AppUsecaseInterface
 }
 
-func NewTransferRoute(handler *gin.RouterGroup, u usecase.AppUsecaseInterface) {
-	route := &TransferRoute{u}
-	h := handler.Group("/transfers")
-	{
-		h.POST("/", route.createTransfer)
-	}
+func NewTransferHandler(router *mux.Router, u usecase.AppUsecaseInterface) {
+	handler := &TransferHandler{u}
+	accountRouter := router.PathPrefix("/transfers").Subrouter()
+
+	accountRouter.HandleFunc("/", handler.createTransfer).Methods(http.MethodPost)
 }
 
-func (route *TransferRoute) createTransfer(ctx *gin.Context) {
-	c := context.Background()
+func (handler *TransferHandler) createTransfer(w http.ResponseWriter, r *http.Request) {
+	var params usecase.CreateTransferRequest
+	var err *httperrors.Error
+	var status int
 
-	params := &usecase.TransferRequestParams{}
-
-	if err := ctx.ShouldBindJSON(params); err != nil {
-		err = fmt.Errorf("%s: createTransfer fail to parse request: %w", appErr.GenericBadRequest, err)
-
-		ctx.Set("msg", "Fail to parse request data")
-		ctx.Set("err", err)
-		ctx.JSON(
-			appErr.GetStatusCode(err),
-			appErr.GenerateErrResponse(err, "Fail to parse request"),
-		)
-		return
-	}
-
-	isValid, err := params.Validate()
-	if !isValid {
-		msg := "Invalid request data"
-		ctx.Set("msg", msg)
-		ctx.Set("err", err)
-		ctx.JSON(
-			appErr.GetStatusCode(err),
-			appErr.GenerateErrResponse(err, msg),
-		)
-		return
-	}
-
-	transferResponse, err := route.usecase.CreateTransfer(c, params)
-
+	err = httpserver.DecodeJSON(w, r, &params)
 	if err != nil {
-		var msg string
-		sc := appErr.GetStatusCode(err)
-		if sc >= 500 {
-			msg = "Internal server error"
-		} else {
-			msg = "Fail to create a transfer"
-		}
-
-		ctx.Set("msg", msg)
-		ctx.Set("err", err)
-		ctx.JSON(
-			sc,
-			appErr.GenerateErrResponse(err, msg),
-		)
+		httpserver.WriteJSON(w, r, httperrors.GetStatusCode(err), response.Error(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, appErr.GenerateOkResponse(transferResponse))
+	response := handler.usecase.CreateTransfer(r.Context(), params)
+
+	status = http.StatusCreated
+	if response.Error != nil {
+		status = httperrors.GetStatusCode(response.Error)
+	}
+
+	httpserver.WriteJSON(w, r, status, response)
 }
-*/

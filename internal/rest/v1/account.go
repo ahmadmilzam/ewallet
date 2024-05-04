@@ -14,31 +14,29 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type AccountRoute struct {
+type AccountHandler struct {
 	usecase usecase.AppUsecaseInterface
 }
 
 func NewAccountHandler(router *mux.Router, u usecase.AppUsecaseInterface) {
-	route := &AccountRoute{u}
+	handler := &AccountHandler{u}
 	accountRouter := router.PathPrefix("/accounts").Subrouter()
 
-	accountRouter.HandleFunc("/", route.createAccount).Methods(http.MethodPost)
-	accountRouter.HandleFunc("/{phone}", route.getAccount).Methods(http.MethodGet)
+	accountRouter.HandleFunc("/", handler.createAccount).Methods(http.MethodPost)
+	accountRouter.HandleFunc("/{phone}", handler.getAccount).Methods(http.MethodGet)
 }
 
-func (route *AccountRoute) getAccount(w http.ResponseWriter, r *http.Request) {
+func (handler *AccountHandler) getAccount(w http.ResponseWriter, r *http.Request) {
 	phone := mux.Vars(r)["phone"]
 
 	if !validator.IsValidPhone(phone) {
 		err := httperrors.GenerateError(httperrors.InvalidPhone, "Invalid param {phone}")
-		slog.Error("Bad request", logger.ErrAttr(err))
+		slog.WarnContext(r.Context(), "Bad request", logger.ErrAttr(err))
 		httpserver.WriteJSON(w, r, httperrors.GetStatusCode(err), response.Error(err))
 		return
 	}
 
-	c := context.Background()
-
-	response := route.usecase.GetAccount(c, phone)
+	response := handler.usecase.GetAccount(r.Context(), phone)
 	status := http.StatusOK
 	if !response.Success {
 		status = httperrors.GetStatusCode(response.Error)
@@ -46,7 +44,7 @@ func (route *AccountRoute) getAccount(w http.ResponseWriter, r *http.Request) {
 	httpserver.WriteJSON(w, r, status, response)
 }
 
-func (route *AccountRoute) createAccount(w http.ResponseWriter, r *http.Request) {
+func (handler *AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
 	var err *httperrors.Error
 	var status int
 	var params usecase.CreateAccountRequest
@@ -57,7 +55,7 @@ func (route *AccountRoute) createAccount(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	response := route.usecase.CreateAccount(context.Background(), params)
+	response := handler.usecase.CreateAccount(context.Background(), params)
 
 	status = http.StatusCreated
 	if response.Error != nil {

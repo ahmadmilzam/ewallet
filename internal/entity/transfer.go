@@ -13,7 +13,8 @@ type TransferQuery interface {
 		transfer *Transfer,
 		entries []Entry,
 		wallets []WalletUpdateBalance,
-		counter *UpdateTransferCounter,
+		counter *TransferCounter,
+		lockCounter bool,
 	) error
 	FindTransferById(ctx context.Context, id string) (*Transfer, error)
 }

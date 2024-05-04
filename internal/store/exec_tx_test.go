@@ -106,12 +106,12 @@ func TestTestExecTx_CreateTransferTx(t *testing.T) {
 			walletsToUpdate := []entity.WalletUpdateBalance{}
 			walletsToUpdate = append(walletsToUpdate, srcWalletUpdated, dstWalletUpdated)
 
-			updatedCounter := &entity.UpdateTransferCounter{
-				WalletID:      dstWalletUpdated.ID,
-				CountDaily:    1,
-				AmountDaily:   amount,
-				CountMonthly:  1,
-				AmountMonthly: amount,
+			updatedCounter := &entity.TransferCounter{
+				WalletID:            dstWalletUpdated.ID,
+				CreditCountDaily:    1,
+				CreditAmountDaily:   amount,
+				CreditCountMonthly:  1,
+				CreditAmountMonthly: amount,
 			}
 
 			err := testStore.CreateTransferTx(
@@ -120,6 +120,7 @@ func TestTestExecTx_CreateTransferTx(t *testing.T) {
 				entries,
 				walletsToUpdate,
 				updatedCounter,
+				true,
 			)
 
 			errs <- err
@@ -184,7 +185,7 @@ func createWalletForAccountt(phone string) []entity.Wallet {
 
 func createTransferCounterr(walletID string) entity.TransferCounter {
 	return entity.TransferCounter{
-		WalletId:            walletID,
+		WalletID:            walletID,
 		CreditCountDaily:    0,
 		CreditCountMonthly:  0,
 		CreditAmountDaily:   0,

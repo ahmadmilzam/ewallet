@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/ahmadmilzam/ewallet/config"
@@ -17,7 +16,6 @@ func main() {
 	cliApp := &cli.App{}
 
 	_ = config.Load("config", ".")
-	fmt.Println("Incoming request to main bin")
 	appConfig := config.GetAppConfig()
 	dbConfig := config.GetDBConfig()
 	migrateCommand := migration.CreateMigrate(dbConfig.Name)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/lib/pq"
 )
 
 const (
@@ -22,6 +21,7 @@ const (
 		status = :status,
 		updated_at = :updated_at
 	WHERE phone = :phone`
+	findAccountByIdSQL           = `SELECT * FROM accounts WHERE phone = $1 LIMIT 1`
 	deleteAccountByIdSQL         = `DELETE * FROM accounts WHERE phone = :phone`
 	findAccountForUpdateByIdSQL  = `SELECT * FROM accounts WHERE phone = $1 LIMIT 1 FOR UPDATE`
 	findAccountAndWalletsByIdSQL = `
@@ -40,8 +40,7 @@ const (
 func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
 	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
 	if err != nil {
-		err = fmt.Errorf("CreateAccount: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("CreateAccount: %w", err)
 	}
 
 	return account, nil
@@ -69,19 +68,9 @@ func (s *Queries) FindAccountForUpdateById(ctx context.Context, phone string) (*
 
 func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Account, error) {
 	ma := &entity.Account{}
-	err := s.db.GetContext(ctx, ma, `SELECT * FROM accounts WHERE phone = $1 LIMIT 1`, phone)
+	err := s.db.GetContext(ctx, ma, findAccountByIdSQL, phone)
 	if err != nil {
-		if err, ok := err.(*pq.Error); ok {
-			// Here err is of type *pq.Error, you may inspect all its fields, e.g.:
-			fmt.Println("pq error:", err)
-			fmt.Println("pq error:", err.Code.Name())
-			/*
-				pq error: pq: duplicate key value violates unique constraint "accounts_pkey"
-				pq error: unique_violation
-			*/
-		}
-		err = fmt.Errorf("FindAccountByPhone: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("FindAccountById: %w", err)
 	}
 
 	return ma, nil
@@ -89,11 +78,9 @@ func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Ac
 
 func (s *Queries) FindAccountAndWalletsById(ctx context.Context, phone string) ([]entity.AccountWallet, error) {
 	var accWallets []entity.AccountWallet
-
 	err := s.db.SelectContext(ctx, &accWallets, findAccountAndWalletsByIdSQL, phone)
 	if err != nil {
-		err = fmt.Errorf("FindAccountAndWalletsById: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("FindAccountAndWalletsById: %w", err)
 	}
 
 	return accWallets, nil

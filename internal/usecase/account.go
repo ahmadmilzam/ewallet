@@ -23,7 +23,7 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountRequ
 	validationErr := params.Validate()
 	if validationErr != nil {
 		msg := "Fail to create account"
-		slog.Warn(msg, logger.ErrAttr(err))
+		slog.Warn(msg, logger.ErrAttr(validationErr))
 		return &CreateAccountResponse{
 			Success: false,
 			Error:   validationErr,
@@ -67,7 +67,7 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountRequ
 	wallets = append(wallets, walletCash, walletPoint)
 
 	counter := &entity.TransferCounter{
-		WalletId:            walletCash.ID,
+		WalletID:            walletCash.ID,
 		CreditCountDaily:    0,
 		CreditCountMonthly:  0,
 		CreditAmountDaily:   0,
@@ -81,14 +81,14 @@ func (u *AppUsecase) CreateAccount(ctx context.Context, params CreateAccountRequ
 	if err != nil {
 		msg := "Fail to create new account, account existed"
 		if strings.Contains(err.Error(), "violates unique constraint") {
-			slog.Error(msg, logger.ErrAttr(err))
+			slog.WarnContext(ctx, msg, logger.ErrAttr(err))
 			return &CreateAccountResponse{
 				Success: false,
 				Error:   httperrors.GenerateError(httperrors.DataDuplication, msg),
 			}
 		}
 		msg = "Fail to create new account"
-		slog.Error(msg, logger.ErrAttr(err))
+		slog.ErrorContext(ctx, msg, logger.ErrAttr(err))
 
 		return &CreateAccountResponse{
 			Success: false,
@@ -131,7 +131,7 @@ func (u *AppUsecase) GetAccount(ctx context.Context, phone string) *GetAccountRe
 
 	if err != nil {
 		msg := "Fail to get account"
-		slog.Error(msg, logger.ErrAttr(err))
+		slog.ErrorContext(ctx, msg, logger.ErrAttr(err))
 
 		return &GetAccountResponse{
 			Success: false,
@@ -141,11 +141,12 @@ func (u *AppUsecase) GetAccount(ctx context.Context, phone string) *GetAccountRe
 
 	if len(accountWallets) == 0 {
 		msg := "Account not found"
-		slog.Error(msg, logger.ErrAttr(err))
+		err := httperrors.GenerateError(httperrors.GenericNotFound, msg)
+		slog.WarnContext(ctx, msg, logger.ErrAttr(err))
 
 		return &GetAccountResponse{
 			Success: false,
-			Error:   httperrors.GenerateError(httperrors.GenericNotFound, msg),
+			Error:   err,
 		}
 	}
 

@@ -40,4 +40,5 @@ func RegisterRoutes(router *mux.Router, usecase usecase.AppUsecaseInterface) {
 	v1RouterGroup := router.PathPrefix("/v1").Subrouter()
 
 	v1.NewAccountHandler(v1RouterGroup, usecase)
+	v1.NewTransferHandler(v1RouterGroup, usecase)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/config"
 	restApi "github.com/ahmadmilzam/ewallet/internal/rest"
+	"github.com/ahmadmilzam/ewallet/internal/rest/middleware"
 	"github.com/ahmadmilzam/ewallet/internal/usecase"
 	"github.com/ahmadmilzam/ewallet/pkg/httpserver"
 	"github.com/gorilla/mux"
@@ -24,6 +25,7 @@ func StartServer(config config.AppConfig, usecase usecase.AppUsecaseInterface) *
 		Usage: "Starting up application",
 		Action: func(c *cli.Context) error {
 			router := mux.NewRouter()
+			router.Use(middleware.RequestID())
 			restApi.RegisterRoutes(router, usecase)
 
 			httpServer := httpserver.New(router, httpserver.WithPort(config.Port))

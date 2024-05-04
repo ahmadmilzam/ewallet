@@ -32,8 +32,7 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account,
 
 		_, err = q.CreateAccount(ctx, account)
 		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
+			return fmt.Errorf("CreateAccountTx: %w", err)
 		}
 
 		_, err = q.CreateWallet(ctx, &wallets[0])
@@ -44,14 +43,12 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account,
 
 		_, err = q.CreateWallet(ctx, &wallets[1])
 		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
+			return fmt.Errorf("CreateAccountTx: %w", err)
 		}
 
 		_, err = q.CreateCounter(ctx, counter)
 		if err != nil {
-			err = fmt.Errorf("CreateAccountTx: %w", err)
-			return err
+			return fmt.Errorf("CreateAccountTx: %w", err)
 		}
 
 		return err
@@ -60,8 +57,7 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account,
 	return err
 }
 
-func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets []entity.WalletUpdateBalance, counter *entity.UpdateTransferCounter) error {
-
+func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets []entity.WalletUpdateBalance, counter *entity.TransferCounter, lockCounter bool) error {
 	err := s.execTx(func(q *Queries) error {
 		var err error
 
@@ -81,6 +77,14 @@ func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transf
 
 		for _, wallet := range wallets {
 			err = q.UpdateWalletBalance(ctx, &wallet)
+			if err != nil {
+				err = fmt.Errorf("CreateTransferTx: %w", err)
+				return err
+			}
+		}
+
+		if lockCounter {
+			_, err = q.FindCounterForUpdateById(ctx, counter.WalletID)
 			if err != nil {
 				err = fmt.Errorf("CreateTransferTx: %w", err)
 				return err

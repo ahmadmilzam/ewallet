@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -18,32 +17,38 @@ import (
 )
 
 type TransferUsecaseInterface interface {
-	CreateTransfer(ctx context.Context, params *CreateTransferRequest) (*CreateTransferResponse, error)
+	CreateTransfer(ctx context.Context, params CreateTransferRequest) *CreateTransferResponse
 }
 
-func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferRequest) *CreateTransferResponse {
-	// get the account src and dst detail (with the wallets)
-	// check if the accounts exist & ACTIVE, or return err
-	srcAccount := u.GetAccount(ctx, params.SrcWallet)
-	if !srcAccount.Success {
-		slog.Error(fmt.Sprintf("%s: Source account not found", httperrors.AccountNotFound))
+func (u *AppUsecase) CreateTransfer(ctx context.Context, params CreateTransferRequest) *CreateTransferResponse {
+	// Validate request transfer params
+	paramErr := params.Validate()
+	if paramErr != nil {
+		msg := "Fail to create account"
+		slog.WarnContext(ctx, msg, logger.ErrAttr(paramErr))
 		return &CreateTransferResponse{
 			Success: false,
-			Error: &httperrors.Error{
-				Code:    httperrors.AccountNotFound,
-				Message: "Source account not found",
-			},
+			Error:   paramErr,
+		}
+	}
+
+	// Get the account src and dst detail (with the wallets)
+	// and check if the accounts exist & ACTIVE, or return err
+	srcAccount := u.GetAccount(ctx, params.SrcWallet)
+	if !srcAccount.Success {
+		return &CreateTransferResponse{
+			Success: false,
+			Error:   srcAccount.Error,
 		}
 	}
 
 	if srcAccount.Data.Status != AccountStatusActive {
-		slog.Error(fmt.Sprintf("%s: Source account not active", httperrors.AccountNotFound))
+		msg := "Source account is inactive"
+		err := httperrors.GenerateError(httperrors.InactiveAccount, msg)
+		slog.Warn(msg, logger.ErrAttr(err))
 		return &CreateTransferResponse{
 			Success: false,
-			Error: &httperrors.Error{
-				Code:    httperrors.InactiveAccount,
-				Message: "Source account not active",
-			},
+			Error:   err,
 		}
 	}
 	srcCashWallet := srcAccount.Data.Wallets[0]
@@ -51,40 +56,33 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 	// ensure that for topup transfer, the srcAccount type must be an assests
 	if params.TransferType == TransferTypeTopup && srcAccount.Data.COAType != AccountCOATypeAssets {
 		msg := fmt.Sprintf(
-			"%s: Account type must be an %s for transfer %s",
-			httperrors.IncorrectAccountType,
+			"Account type must be an %s for operation %s",
 			AccountCOATypeAssets,
 			TransferTypeTopup,
 		)
+		err := httperrors.GenerateError(httperrors.InvalidCOAType, msg)
+		slog.Warn(msg, logger.ErrAttr(err))
 		return &CreateTransferResponse{
 			Success: false,
-			Error: &httperrors.Error{
-				Code:    httperrors.AccountNotFound,
-				Message: msg,
-			},
+			Error:   err,
 		}
 	}
 
 	dstAccount := u.GetAccount(ctx, params.DstWallet)
-	if !dstAccount.Success {
-		slog.Error(fmt.Sprintf("%s: Destination account not found", httperrors.AccountNotFound))
+	if !srcAccount.Success {
 		return &CreateTransferResponse{
 			Success: false,
-			Error: &httperrors.Error{
-				Code:    httperrors.AccountNotFound,
-				Message: "Destination account not found",
-			},
+			Error:   dstAccount.Error,
 		}
 	}
 
 	if dstAccount.Data.Status != AccountStatusActive {
-		slog.Error(fmt.Sprintf("%s: Destination account not active", httperrors.AccountNotFound))
+		msg := "Destination account is inactive"
+		err := httperrors.GenerateError(httperrors.InactiveAccount, msg)
+		slog.Warn(msg, logger.ErrAttr(err))
 		return &CreateTransferResponse{
 			Success: false,
-			Error: &httperrors.Error{
-				Code:    httperrors.InactiveAccount,
-				Message: "Destination account not active",
-			},
+			Error:   err,
 		}
 	}
 	dstCashWallet := dstAccount.Data.Wallets[0]
@@ -100,7 +98,7 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 	if srcBalanceAfter < 0 && srcAccount.Data.Role != AccountRoleInternalCoa {
 		msg := "insufficient balance"
 		code := httperrors.InsufficientBalance
-		slog.Error(fmt.Sprintf("%s: %s", code, msg))
+		slog.ErrorContext(ctx, fmt.Sprintf("%s: %s", code, msg))
 		return &CreateTransferResponse{
 			Success: false,
 			Error:   httperrors.GenerateError(code, msg),
@@ -112,7 +110,7 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 	if dstBalanceAfter > int64(creditRules.BalanceLimit) {
 		msg := "destination account is exceeding balance limit"
 		code := httperrors.ExceedBalanceAmount
-		slog.Error(fmt.Sprintf("%s: %s", code, msg))
+		slog.ErrorContext(ctx, fmt.Sprintf("%s: %s", code, msg))
 		return &CreateTransferResponse{
 			Success: false,
 			Error:   httperrors.GenerateError(code, msg),
@@ -123,14 +121,14 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 	// get and validate the counter, return err if exceeded the threshold
 	transferCounter, err := u.store.FindCounterById(ctx, dstAccount.Data.Wallets[0].ID)
 	if err != nil {
-		var code string = httperrors.GenericInternalError
-		var msg string = "find counter error"
+		code := httperrors.GenericInternalError
+		msg := "Error finding counter"
 		isNotFound := strings.Contains(err.Error(), "no rows in result set")
 		if isNotFound {
 			code = httperrors.CounterNotFound
 			msg = "counter not found"
 		}
-		slog.Error(fmt.Sprintf("%s: %s", code, msg))
+		slog.ErrorContext(ctx, msg, logger.ErrAttr(err))
 
 		return &CreateTransferResponse{
 			Success: false,
@@ -139,23 +137,17 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 	}
 
 	// calculate post transaction counter, will return updated counter data
-	updateCounter := u.calculateCounter(params.Amount, transferCounter)
+	u.calculateCounter(params.Amount, transferCounter)
 
 	// validate the credit counter limit daily & monthly still below threshold
 	// validate the credit amount limit daily & monthly ensure still below threshold
-	err = u.validateCounter(transferCounter, creditRules)
-	if err != nil {
-		var counterErr *httperrors.Error
-		slog.Error("counter error", logger.ErrAttr(err))
-		if errors.As(err, &counterErr) {
-			return &CreateTransferResponse{
-				Success: false,
-				Error:   httperrors.GenerateError(counterErr.Code, counterErr.Message),
-			}
-		}
+	counterErr := u.validateCounter(transferCounter, creditRules)
+	if counterErr != nil {
+		msg := "Exceeding counter limit"
+		slog.ErrorContext(ctx, msg, logger.ErrAttr(counterErr))
 		return &CreateTransferResponse{
 			Success: false,
-			Error:   httperrors.GenerateError(httperrors.GenericInternalError, "Internal server error"),
+			Error:   counterErr,
 		}
 	}
 
@@ -235,77 +227,74 @@ func (u *AppUsecase) CreateTransfer(ctx context.Context, params *CreateTransferR
 		transfer,
 		entries,
 		wallets,
-		&updateCounter,
+		transferCounter,
+		true,
 	)
 
 	if err != nil {
-		slog.Error("fail to create transfer", logger.ErrAttr(fmt.Errorf("%s: %w", httperrors.GenericInternalError, err)))
+		msg := "Fail to create transfer"
+		slog.ErrorContext(ctx, msg, logger.ErrAttr(err))
 		return &CreateTransferResponse{
 			Success: false,
 			Error: &httperrors.Error{
 				Code:    httperrors.GenericInternalError,
-				Message: "fail to create transfer",
+				Message: msg,
 			},
 		}
 	}
 
-	// remap transfer response based on above process (err/ok)
+	// return transfer response based on above process (err/ok)
 	response := &CreateTransferResponse{
 		Success: true,
 		Data: &CreateTransferData{
 			TransferID:            transferId,
 			CreatedAt:             JSONTime(now),
-			CreateTransferRequest: params,
+			CreateTransferRequest: &params,
 		},
 	}
 	return response
 }
 
-func (u *AppUsecase) calculateCounter(amount int64, counter *entity.TransferCounter) entity.UpdateTransferCounter {
+func (u *AppUsecase) calculateCounter(amount int64, counter *entity.TransferCounter) {
 	currentDay := time.Now().Day()
 	lastTransferDay := counter.UpdatedAt.Local().Day()
 
 	currentMonth := time.Now().Month().String()
 	lastTransferMonth := counter.UpdatedAt.Local().Month().String()
 
-	updateCounter := entity.UpdateTransferCounter{}
-	updateCounter.WalletID = counter.WalletId
+	// updateCounter := entity.UpdateTransferCounter{}
+	// updateCounter.WalletID = counter.WalletId
 	if currentDay == lastTransferDay {
 		counter.CreditCountDaily++
 		counter.CreditAmountDaily = counter.CreditAmountDaily + amount
-
-		updateCounter.CountDaily = 1
-		updateCounter.AmountDaily = amount
+		// updateCounter.CountDaily = 1
+		// updateCounter.AmountDaily = amount
 	} else {
 		counter.CreditCountDaily = 1
 		counter.CreditAmountDaily = amount
-
-		updateCounter.CountDaily = -(counter.CreditCountDaily - 1)
-		updateCounter.AmountDaily = -(counter.CreditAmountDaily - amount)
+		// updateCounter.CountDaily = -(counter.CreditCountDaily - 1)
+		// updateCounter.AmountDaily = -(counter.CreditAmountDaily - amount)
 	}
 
 	if currentMonth == lastTransferMonth {
 		counter.CreditCountMonthly++
 		counter.CreditAmountMonthly = counter.CreditAmountMonthly + amount
-
-		updateCounter.CountMonthly = 1
-		updateCounter.AmountMonthly = amount
+		// updateCounter.CountMonthly = 1
+		// updateCounter.AmountMonthly = amount
 	} else {
 		counter.CreditCountMonthly = 1
 		counter.CreditAmountMonthly = amount
-
-		updateCounter.CountDaily = -(counter.CreditCountMonthly - 1)
-		updateCounter.AmountDaily = -(counter.CreditAmountMonthly - amount)
+		// updateCounter.CountDaily = -(counter.CreditCountMonthly - 1)
+		// updateCounter.AmountDaily = -(counter.CreditAmountMonthly - amount)
 	}
 	now := time.Now()
 
 	counter.UpdatedAt = now
-	updateCounter.UpdatedAt = now
 
-	return updateCounter
+	// updateCounter.UpdatedAt = now
 }
 
-func (u *AppUsecase) validateCounter(counter *entity.TransferCounter, rules config.AccountConfig) error {
+func (u *AppUsecase) validateCounter(counter *entity.TransferCounter, rules config.AccountConfig) *httperrors.Error {
 	if counter.CreditCountDaily > rules.CreditCountDailyLimit {
 		return httperrors.GenerateError(httperrors.ExceedCountDaily, "exceeded credit count daily limit")
 	}

@@ -8,4 +8,5 @@ const (
 	InvalidPhone         string = "40004"
 	InvalidCOAType       string = "40005"
 	InvalidEmail         string = "40006"
+	MissingRequestId     string = "40007"
 )

@@ -1,9 +1,6 @@
 package usecase
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/ahmadmilzam/ewallet/pkg/array"
 	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
 	"github.com/ahmadmilzam/ewallet/pkg/validator"
@@ -17,27 +14,20 @@ type CreateTransferRequest struct {
 	Reference    string `json:"reference,omitempty"`
 }
 
-func (params *CreateTransferRequest) Validate() (bool, error) {
-	var err error
+func (params *CreateTransferRequest) Validate() *httperrors.Error {
 	if params.DstWallet == params.SrcWallet {
-		err = errors.New("CreateTransfer: cannot transfer to same account")
-		err = fmt.Errorf("%s: %w", httperrors.TransferToSameAccount, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.TransferToSameAccount, "Can't transfer to same account")
 	}
 
 	if !validator.IsValidAmount(params.Amount) {
-		err = errors.New("CreateTransfer: invalid amount params")
-		err = fmt.Errorf("%s: %w", httperrors.InvalidAmount, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.InvalidAmount, "Invalid params {amount}")
 	}
 
 	if !array.Contains(GetSupportedTransferType(), params.TransferType) {
-		err = errors.New("CreateTransfer: invalid transfer type")
-		err = fmt.Errorf("%s: %w", httperrors.InvalidTransferType, err)
-		return false, err
+		return httperrors.GenerateError(httperrors.InvalidTransferType, "Invalid params {transfer_type}")
 	}
 
-	return true, nil
+	return nil
 }
 
 type CreateTransferData struct {
@@ -48,6 +38,6 @@ type CreateTransferData struct {
 
 type CreateTransferResponse struct {
 	Success bool                `json:"success"`
-	Error   *httperrors.Error   `json:"error"`
-	Data    *CreateTransferData `json:"data"`
+	Error   *httperrors.Error   `json:"error,omitempty"`
+	Data    *CreateTransferData `json:"data,omitempty"`
 }
