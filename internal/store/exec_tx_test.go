@@ -33,8 +33,8 @@ func TestTestExecTx_CreateTransferTx(t *testing.T) {
 	}
 
 	walletDst := entity.Wallet{
-		ID:           "002",
-		AccountPhone: "+62000000002",
+		ID:           "68878a7c-49b7-40be-a720-1c93c10e845b",
+		AccountPhone: "+62812222222",
 		Balance:      0,
 		Type:         "LIABILITIES",
 		CreatedAt:    time.Now(),
