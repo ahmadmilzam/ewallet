@@ -20,11 +20,11 @@ func main() {
 	dbConfig := config.GetDBConfig()
 	migrateCommand := migration.CreateMigrate(dbConfig.Name)
 
-	pgstore := store.NewSQLStore()
+	sqlstore := store.NewSQLStore()
 
 	logger.InitializeLogger(logger.NewOption(logger.WithLevel(config.GetLogConfig().Level)))
 
-	appUsecase := usecase.NewAppUsecase(pgstore, appConfig)
+	appUsecase := usecase.NewAppUsecase(sqlstore, appConfig)
 
 	cliApp.Commands = []*cli.Command{
 		console.StartServer(appConfig, appUsecase),

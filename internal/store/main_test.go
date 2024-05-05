@@ -21,8 +21,8 @@ func TestMain(m *testing.M) {
 	}
 
 	testStore = &store.SQLStore{
-		DB:      sql,
-		Queries: store.NewQueries(sql),
+		DB:            sql,
+		QueryCommands: store.NewQueryCommands(sql),
 	}
 
 	os.Exit(m.Run())

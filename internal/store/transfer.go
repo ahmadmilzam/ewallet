@@ -27,7 +27,7 @@ const (
 	FindTransferForUpdateByIdSQL = `SELECT * FROM transfers WHERE id = $1 LIMIT 1 FOR UPDATE`
 )
 
-func (s *Queries) CreateTransfer(ctx context.Context, transfer *entity.Transfer) (*entity.Transfer, error) {
+func (s *QueryCommands) CreateTransfer(ctx context.Context, transfer *entity.Transfer) (*entity.Transfer, error) {
 	_, err := s.db.NamedExecContext(ctx, CreateTransferSQL, transfer)
 
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *Queries) CreateTransfer(ctx context.Context, transfer *entity.Transfer)
 	return transfer, nil
 }
 
-func (s *Queries) FindTransferById(ctx context.Context, id string) (*entity.Transfer, error) {
+func (s *QueryCommands) FindTransferById(ctx context.Context, id string) (*entity.Transfer, error) {
 	counter := &entity.Transfer{}
 	err := s.db.GetContext(ctx, counter, FindTransferByIdSQL, id)
 	if err != nil {

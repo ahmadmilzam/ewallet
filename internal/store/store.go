@@ -8,20 +8,24 @@ import (
 )
 
 type SQLStoreInterface interface {
-	entity.StoreQuerier
+	entity.AccountQuery
+	entity.WalletQuery
+	entity.TransferCounterQuery
+	entity.TransferQuery
+	entity.EntryQuery
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
 type SQLStore struct {
-	*sqlx.DB
-	*Queries
+	*sqlx.DB // for DB Transaction purposes
+	*QueryCommands
 }
 
 // NewStore creates a new store
 func NewSQLStore() SQLStoreInterface {
 	sql := pgclient.New()
 	return &SQLStore{
-		DB:      sql,
-		Queries: NewQueries(sql),
+		DB:            sql,
+		QueryCommands: NewQueryCommands(sql),
 	}
 }

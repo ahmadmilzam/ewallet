@@ -13,7 +13,7 @@ const (
 	FindEntryByIdSQL = `SELECT * FROM entries WHERE id = $1 LIMIT 1`
 )
 
-func (s *Queries) CreateEntry(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
+func (s *QueryCommands) CreateEntry(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
 	_, err := s.db.NamedExecContext(ctx, CreateEntrySQL, entry)
 
 	if err != nil {
@@ -23,7 +23,7 @@ func (s *Queries) CreateEntry(ctx context.Context, entry *entity.Entry) (*entity
 	return entry, nil
 }
 
-func (s *Queries) FindEntryById(ctx context.Context, id string) (*entity.Entry, error) {
+func (s *QueryCommands) FindEntryById(ctx context.Context, id string) (*entity.Entry, error) {
 	entry := &entity.Entry{}
 	err := s.db.GetContext(ctx, entry, FindEntryByIdSQL, id)
 	if err != nil {

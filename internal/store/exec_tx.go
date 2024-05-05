@@ -7,13 +7,13 @@ import (
 	"github.com/ahmadmilzam/ewallet/internal/entity"
 )
 
-func (s *SQLStore) execTx(fn func(*Queries) error) error {
+func (s *SQLStore) execTx(fn func(*QueryCommands) error) error {
 	tx, err := s.DB.Beginx()
 	if err != nil {
 		return err
 	}
 
-	q := NewQueries(tx)
+	q := NewQueryCommands(tx)
 	err = fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
@@ -27,7 +27,7 @@ func (s *SQLStore) execTx(fn func(*Queries) error) error {
 
 func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account, wallets []entity.Wallet, counter *entity.TransferCounter) error {
 
-	err := s.execTx(func(q *Queries) error {
+	err := s.execTx(func(q *QueryCommands) error {
 		var err error
 
 		_, err = q.CreateAccount(ctx, account)
@@ -58,7 +58,7 @@ func (s *SQLStore) CreateAccountTx(ctx context.Context, account *entity.Account,
 }
 
 func (s *SQLStore) CreateTransferTx(ctx context.Context, transfer *entity.Transfer, entries []entity.Entry, wallets []entity.WalletUpdateBalance, counter *entity.TransferCounter, lockCounter bool) error {
-	err := s.execTx(func(q *Queries) error {
+	err := s.execTx(func(q *QueryCommands) error {
 		var err error
 
 		_, err = q.CreateTransfer(ctx, transfer)

@@ -37,7 +37,7 @@ const (
 	WHERE account.phone = $1`
 )
 
-func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
+func (s *QueryCommands) CreateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
 	_, err := s.db.NamedExecContext(ctx, createAccountSQL, account)
 	if err != nil {
 		return nil, fmt.Errorf("CreateAccount: %w", err)
@@ -46,7 +46,7 @@ func (s *Queries) CreateAccount(ctx context.Context, account *entity.Account) (*
 	return account, nil
 }
 
-func (s *Queries) UpdateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
+func (s *QueryCommands) UpdateAccount(ctx context.Context, account *entity.Account) (*entity.Account, error) {
 	_, err := s.db.NamedExecContext(ctx, updateAccountSQL, account)
 
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *Queries) UpdateAccount(ctx context.Context, account *entity.Account) (*
 	return account, nil
 }
 
-func (s *Queries) FindAccountForUpdateById(ctx context.Context, phone string) (*entity.Account, error) {
+func (s *QueryCommands) FindAccountForUpdateById(ctx context.Context, phone string) (*entity.Account, error) {
 	a := &entity.Account{}
 	err := s.db.GetContext(ctx, a, findAccountForUpdateByIdSQL, phone)
 	if err != nil {
@@ -66,7 +66,7 @@ func (s *Queries) FindAccountForUpdateById(ctx context.Context, phone string) (*
 	return a, nil
 }
 
-func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Account, error) {
+func (s *QueryCommands) FindAccountById(ctx context.Context, phone string) (*entity.Account, error) {
 	ma := &entity.Account{}
 	err := s.db.GetContext(ctx, ma, findAccountByIdSQL, phone)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *Queries) FindAccountById(ctx context.Context, phone string) (*entity.Ac
 	return ma, nil
 }
 
-func (s *Queries) FindAccountAndWalletsById(ctx context.Context, phone string) ([]entity.AccountWallet, error) {
+func (s *QueryCommands) FindAccountAndWalletsById(ctx context.Context, phone string) ([]entity.AccountWallet, error) {
 	var accWallets []entity.AccountWallet
 	err := s.db.SelectContext(ctx, &accWallets, findAccountAndWalletsByIdSQL, phone)
 	if err != nil {

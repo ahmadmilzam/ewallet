@@ -32,7 +32,7 @@ var (
 	FindCounterForUpdateByIdSQL = `SELECT * FROM transfer_counters WHERE wallet_id = $1 LIMIT 1 FOR UPDATE`
 )
 
-func (s *Queries) CreateCounter(ctx context.Context, counter *entity.TransferCounter) (*entity.TransferCounter, error) {
+func (s *QueryCommands) CreateCounter(ctx context.Context, counter *entity.TransferCounter) (*entity.TransferCounter, error) {
 	_, err := s.db.NamedExecContext(ctx, CreateCounterSQL, counter)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *Queries) CreateCounter(ctx context.Context, counter *entity.TransferCou
 	return counter, nil
 }
 
-func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.TransferCounter) error {
+func (s *QueryCommands) UpdateCounter(ctx context.Context, counter *entity.TransferCounter) error {
 	_, err := s.db.NamedExecContext(ctx, UpdateCounterSQL, counter)
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *Queries) UpdateCounter(ctx context.Context, counter *entity.TransferCou
 	return nil
 }
 
-func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {
+func (s *QueryCommands) FindCounterById(ctx context.Context, id string) (*entity.TransferCounter, error) {
 	counter := &entity.TransferCounter{}
 	err := s.db.GetContext(ctx, counter, FindCounterByIdSQL, id)
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *Queries) FindCounterById(ctx context.Context, id string) (*entity.Trans
 	return counter, nil
 }
 
-func (s *Queries) FindCounterForUpdateById(ctx context.Context, id string) (*entity.TransferCounter, error) {
+func (s *QueryCommands) FindCounterForUpdateById(ctx context.Context, id string) (*entity.TransferCounter, error) {
 	counter := &entity.TransferCounter{}
 	err := s.db.GetContext(ctx, counter, FindCounterForUpdateByIdSQL, id)
 	if err != nil {

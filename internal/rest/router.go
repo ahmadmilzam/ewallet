@@ -19,7 +19,7 @@ func staticHandler(status int, code string, message string) http.Handler {
 }
 
 func handlePing(w http.ResponseWriter, r *http.Request) {
-	httpserver.WriteJSON(w, r, http.StatusOK, response.Success("pong"))
+	httpserver.WriteJSON(w, r, http.StatusOK, response.Success(nil))
 }
 
 func RegisterRoutes(router *mux.Router, usecase usecase.AppUsecaseInterface) {

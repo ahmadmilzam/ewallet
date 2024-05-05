@@ -2,21 +2,21 @@ package usecase
 
 import (
 	"github.com/ahmadmilzam/ewallet/config"
-	"github.com/ahmadmilzam/ewallet/internal/entity"
+	"github.com/ahmadmilzam/ewallet/internal/store"
 )
 
 type AppUsecaseInterface interface {
 	AccountUsecaseInterface
-	TransferUsecaseInterface
 	WalletUsecaseInterface
+	TransferUsecaseInterface
 }
 
 type AppUsecase struct {
-	store  entity.StoreQuerier
+	store  store.SQLStoreInterface
 	config config.AppConfig
 }
 
-func NewAppUsecase(s entity.StoreQuerier, c config.AppConfig) AppUsecaseInterface {
+func NewAppUsecase(s store.SQLStoreInterface, c config.AppConfig) AppUsecaseInterface {
 	return &AppUsecase{
 		store:  s,
 		config: c,

@@ -32,7 +32,7 @@ const (
 	FindWalletByPhoneSQL       = `SELECT * FROM wallets WHERE account_phone=$1`
 )
 
-func (s *Queries) CreateWallet(ctx context.Context, w *entity.Wallet) (*entity.Wallet, error) {
+func (s *QueryCommands) CreateWallet(ctx context.Context, w *entity.Wallet) (*entity.Wallet, error) {
 	_, err := s.db.NamedExecContext(ctx, CreateWalletSQL, w)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *Queries) CreateWallet(ctx context.Context, w *entity.Wallet) (*entity.W
 	return w, nil
 }
 
-func (s *Queries) UpdateWallet(ctx context.Context, wallet *entity.Wallet) error {
+func (s *QueryCommands) UpdateWallet(ctx context.Context, wallet *entity.Wallet) error {
 	results, err := s.db.NamedExecContext(ctx, UpdateWalletSQL, wallet)
 	if err != nil {
 		return fmt.Errorf("UpdateWallet: %w", err)
@@ -56,7 +56,7 @@ func (s *Queries) UpdateWallet(ctx context.Context, wallet *entity.Wallet) error
 	return nil
 }
 
-func (s *Queries) UpdateWalletBalance(ctx context.Context, wallet *entity.WalletUpdateBalance) error {
+func (s *QueryCommands) UpdateWalletBalance(ctx context.Context, wallet *entity.WalletUpdateBalance) error {
 
 	results, err := s.db.NamedExecContext(ctx, UpdateWalletBalaceSQL, wallet)
 	if err != nil {
@@ -74,7 +74,7 @@ func (s *Queries) UpdateWalletBalance(ctx context.Context, wallet *entity.Wallet
 	return nil
 }
 
-func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet, error) {
+func (s *QueryCommands) FindWalletById(ctx context.Context, id string) (*entity.Wallet, error) {
 	var wallet = &entity.Wallet{}
 	err := s.db.GetContext(ctx, wallet, FindWalletByIdSQL, id)
 
@@ -85,7 +85,7 @@ func (s *Queries) FindWalletById(ctx context.Context, id string) (*entity.Wallet
 	return wallet, nil
 }
 
-func (s *Queries) FindWalletForUpdateById(ctx context.Context, id string) (*entity.Wallet, error) {
+func (s *QueryCommands) FindWalletForUpdateById(ctx context.Context, id string) (*entity.Wallet, error) {
 	var mw entity.Wallet
 	err := s.db.GetContext(ctx, &mw, FindWalletForUpdateByIdSQL, id)
 	if err != nil {
@@ -95,7 +95,7 @@ func (s *Queries) FindWalletForUpdateById(ctx context.Context, id string) (*enti
 	return &mw, nil
 }
 
-func (s *Queries) FindWalletsByPhone(ctx context.Context, phone string) ([]entity.Wallet, error) {
+func (s *QueryCommands) FindWalletsByPhone(ctx context.Context, phone string) ([]entity.Wallet, error) {
 	var wallets []entity.Wallet
 
 	err := s.db.SelectContext(ctx, &wallets, FindWalletByPhoneSQL, phone)
