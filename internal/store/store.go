@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+//go:generate mockery --name "SQLStoreInterface" --output "./_mock" --outpkg "mockery"
 type SQLStoreInterface interface {
 	entity.AccountQuery
 	entity.WalletQuery

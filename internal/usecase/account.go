@@ -141,7 +141,7 @@ func (u *AppUsecase) GetAccount(ctx context.Context, phone string) *GetAccountRe
 
 	if len(accountWallets) == 0 {
 		msg := "Account not found"
-		err := httperrors.GenerateError(httperrors.GenericNotFound, msg)
+		err := httperrors.GenerateError(httperrors.AccountNotFound, msg)
 		slog.WarnContext(ctx, msg, logger.ErrAttr(err))
 
 		return &GetAccountResponse{

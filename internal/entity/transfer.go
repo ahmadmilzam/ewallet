@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-//go:generate mockery --name JournalStoreQuerier
 type TransferQuery interface {
 	CreateTransfer(ctx context.Context, transfer *Transfer) (*Transfer, error)
 	CreateTransferTx(

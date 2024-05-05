@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-//go:generate mockery --name WalletStoreQuerier
 type WalletQuery interface {
 	CreateWallet(ctx context.Context, wallet *Wallet) (*Wallet, error)
 	UpdateWallet(ctx context.Context, wallet *Wallet) error

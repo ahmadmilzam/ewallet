@@ -5,6 +5,7 @@ import (
 	"github.com/ahmadmilzam/ewallet/internal/store"
 )
 
+//go:generate mockery --name "AppUsecaseInterface" --output "./_mock" --outpkg "mockery"
 type AppUsecaseInterface interface {
 	AccountUsecaseInterface
 	WalletUsecaseInterface

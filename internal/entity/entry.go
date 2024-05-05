@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-//go:generate mockery --name TransferStoreQuerier
 type EntryQuery interface {
 	CreateEntry(ctx context.Context, model *Entry) (*Entry, error)
 	FindEntryById(ctx context.Context, id string) (*Entry, error)
