@@ -47,8 +47,8 @@ type AccountWalletData struct {
 	Role      string          `json:"role"`
 	Status    string          `json:"status"`
 	COAType   string          `json:"coa_type"`
-	CreatedAt JSONTime        `json:"created_at"`
-	UpdatedAt JSONTime        `json:"updated_at"`
+	CreatedAt string          `json:"created_at"`
+	UpdatedAt string          `json:"updated_at"`
 	Wallets   []WalletSummary `json:"wallets"`
 }
 

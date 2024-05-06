@@ -166,8 +166,8 @@ func (u *AppUsecase) mapCreateAccountWalletResponse(feeder []entity.AccountWalle
 		Role:      feeder[0].Role,
 		Status:    feeder[0].Status,
 		COAType:   feeder[0].COAType,
-		CreatedAt: JSONTime(feeder[0].Account.CreatedAt.Local()),
-		UpdatedAt: JSONTime(feeder[0].Account.UpdatedAt.Local()),
+		CreatedAt: feeder[0].Account.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: feeder[0].Account.UpdatedAt.Format(time.RFC3339),
 		Wallets:   []WalletSummary{},
 	}
 
