@@ -15,12 +15,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// var loc, _ = time.LoadLocation("Asia/Jakarta")
-// var err error
-// loc, err = time.LoadLocation("Asia/Jakarta")
-// var timestamp = time.Date(2024, time.Now().Month(), 1, 1, 1, 1, 1, loc)
-// var timestamp = time.Date(2024, time.May, 6, 14, 2, 27, 0, time.Local)
-
 func TestAppUsecase_CreateAccount(t *testing.T) {
 	_ = config.Load("config", "../../")
 
