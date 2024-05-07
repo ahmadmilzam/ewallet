@@ -9,7 +9,6 @@ import (
 
 	"github.com/ahmadmilzam/ewallet/config"
 	"github.com/ahmadmilzam/ewallet/internal/entity"
-	"github.com/ahmadmilzam/ewallet/internal/store"
 	mockery "github.com/ahmadmilzam/ewallet/internal/store/_mock"
 	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
 	"github.com/go-faker/faker/v4"
@@ -332,56 +331,3 @@ func TestAppUsecase_GetAccount(t *testing.T) {
 		})
 	}
 }
-
-func TestAppUsecase_mapCreateAccountWalletResponse(t *testing.T) {
-	type fields struct {
-		store  store.SQLStoreInterface
-		config config.AppConfig
-	}
-	type args struct {
-		feeder []entity.AccountWallet
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *AccountWalletData
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &AppUsecase{
-				store:  tt.fields.store,
-				config: tt.fields.config,
-			}
-			if got := u.mapCreateAccountWalletResponse(tt.args.feeder); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AppmapCreateAccountWalletResponse() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-/*
-// receive
-&entity.Account{
-	Phone:"+710842617359",
-	Name:"King Hailey Rolfson",
-	Email:"EwVoOkE@fxvWkeS.net",
-	Role:"REGISTERED",
-	Status:"ACTIVE",
-	COAType:"LIABILITIES",
-	CreatedAt:time.Date(2024, time.May, 6, 9, 59, 58, 392043000, time.Local),
-	UpdatedAt:time.Date(2024, time.May, 6, 9, 59, 58, 392044000, time.Local)}
-// got
-&entity.Account{
-	Phone:"+710842617359",
-	Name:"King Hailey Rolfson",
-	Email:"EwVoOkE@fxvWkeS.net",
-	Role:"REGISTERED",
-	Status:"ACTIVE",
-	COAType:"LIABILITIES",
-	CreatedAt:time.Date(2024, time.May, 1, 1, 1, 1, 1, time.Local),
-	UpdatedAt:time.Date(2024, time.May, 1, 1, 1, 1, 1, time.Local)
-}
-*/
