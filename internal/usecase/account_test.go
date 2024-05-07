@@ -3,9 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -15,7 +13,6 @@ import (
 	mockery "github.com/ahmadmilzam/ewallet/internal/store/_mock"
 	httperrors "github.com/ahmadmilzam/ewallet/pkg/http-errors"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -35,6 +32,8 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 		coaType       string
 		role          string
 		status        string
+		createdAt     time.Time
+		updatedAt     time.Time
 		walletIDCash  string
 		walletIDPoint string
 	}
@@ -46,6 +45,8 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 		coaType:       AccountCOATypeLiabilities,
 		role:          AccountRoleRegistered,
 		status:        AccountStatusActive,
+		createdAt:     time.Now(),
+		updatedAt:     time.Now(),
 		walletIDCash:  "wallet_id_cash",
 		walletIDPoint: "wallet_id_point",
 	}
@@ -55,27 +56,20 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 		params CreateAccountRequest
 	}
 
-	type mockArgs struct {
-		account *entity.Account
-		wallets []entity.Wallet
-		counter *entity.TransferCounter
-	}
-
 	type mockResults struct {
 		err error
 	}
 
 	tests := []struct {
 		name        string
+		callMock    bool
 		args        args
-		mockMethod  string
-		mockArgs    mockArgs
 		mockResults mockResults
 		want        *CreateAccountResponse
 	}{
 		// TODO: Add test cases.
 		{
-			name: "Invalid request params",
+			name: "Invalid params: missing {name}",
 			args: args{
 				ctx: context.Background(),
 				params: CreateAccountRequest{
@@ -83,46 +77,6 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 					Phone:   faker.E164PhoneNumber(),
 					Email:   faker.Email(),
 					COAType: AccountCOATypeLiabilities,
-				},
-			},
-			mockMethod: "CreateAccountTx",
-			mockArgs: mockArgs{
-				account: &entity.Account{
-					Phone:     "",
-					Name:      "",
-					Email:     "",
-					Role:      "",
-					Status:    "",
-					COAType:   "",
-					CreatedAt: time.Time{},
-					UpdatedAt: time.Time{},
-				},
-				wallets: []entity.Wallet{
-					{
-						ID:           "wallet_id_cash",
-						AccountPhone: dataSeeder.phone,
-						Balance:      int64(0),
-						Type:         WalletTypeCash,
-						CreatedAt:    time.Now(),
-						UpdatedAt:    time.Now(),
-					},
-					{
-						ID:           "wallet_id_point",
-						AccountPhone: dataSeeder.phone,
-						Balance:      int64(0),
-						Type:         WalletTypePoint,
-						CreatedAt:    time.Now(),
-						UpdatedAt:    time.Now(),
-					},
-				},
-				counter: &entity.TransferCounter{
-					WalletID:            "wallet_id_cash",
-					CreditCountDaily:    int16(0),
-					CreditCountMonthly:  int16(0),
-					CreditAmountDaily:   int64(0),
-					CreditAmountMonthly: int64(0),
-					CreatedAt:           time.Now(),
-					UpdatedAt:           time.Now(),
 				},
 			},
 			mockResults: mockResults{
@@ -134,147 +88,88 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 				Error:   httperrors.GenerateError(httperrors.GenericBadRequest, "Params {name} is required"),
 			},
 		},
-		// {
-		// 	name: "Account existed",
-		// 	args: args{
-		// 		ctx: context.Background(),
-		// 		params: CreateAccountRequest{
-		// 			Name:    dataSeeder.name,
-		// 			Phone:   dataSeeder.phone,
-		// 			Email:   dataSeeder.email,
-		// 			COAType: AccountCOATypeLiabilities,
-		// 		},
-		// 	},
-		// 	mockMethod: "CreateAccountTx",
-		// 	mockArgs: mockArgs{
-		// 		account: &entity.Account{
-		// 			Phone:     dataSeeder.phone,
-		// 			Name:      dataSeeder.name,
-		// 			Email:     dataSeeder.email,
-		// 			Role:      dataSeeder.role,
-		// 			Status:    dataSeeder.status,
-		// 			COAType:   dataSeeder.coaType,
-		// 			CreatedAt: time.Now(),
-		// 			UpdatedAt: time.Now(),
-		// 		},
-		// 		wallets: []entity.Wallet{
-		// 			{
-		// 				ID:           "wallet_id_cash",
-		// 				AccountPhone: dataSeeder.phone,
-		// 				Balance:      int64(0),
-		// 				Type:         WalletTypeCash,
-		// 				CreatedAt:    time.Now(),
-		// 				UpdatedAt:    time.Now(),
-		// 			},
-		// 			{
-		// 				ID:           "wallet_id_point",
-		// 				AccountPhone: dataSeeder.phone,
-		// 				Balance:      int64(0),
-		// 				Type:         WalletTypePoint,
-		// 				CreatedAt:    time.Now(),
-		// 				UpdatedAt:    time.Now(),
-		// 			},
-		// 		},
-		// 		counter: &entity.TransferCounter{
-		// 			WalletID:            "wallet_id_cash",
-		// 			CreditCountDaily:    int16(0),
-		// 			CreditCountMonthly:  int16(0),
-		// 			CreditAmountDaily:   int64(0),
-		// 			CreditAmountMonthly: int64(0),
-		// 			CreatedAt:           time.Now(),
-		// 			UpdatedAt:           time.Now(),
-		// 		},
-		// 	},
-		// 	mockResults: mockResults{
-		// 		err: errors.New("sql: violates unique constraint"),
-		// 	},
-		// 	want: &CreateAccountResponse{
-		// 		Success: false,
-		// 		Data:    nil,
-		// 		Error:   httperrors.GenerateError(httperrors.DataDuplication, "Fail to create new account, account existed"),
-		// 	},
-		// },
-		// {
-		// 	name:   "Account created",
-		// 	args: args{
-		// 		ctx: context.Background(),
-		// 		params: CreateAccountRequest{
-		// 			Name:    dataSeeder.name,
-		// 			Phone:   dataSeeder.phone,
-		// 			Email:   dataSeeder.email,
-		// 			COAType: AccountCOATypeLiabilities,
-		// 		},
-		// 	},
-		// 	mockMethod: "CreateAccountTx",
-		// 	mockArgs: mockArgs{
-		// 		account: &entity.Account{
-		// 			Phone:     dataSeeder.phone,
-		// 			Name:      dataSeeder.name,
-		// 			Email:     dataSeeder.email,
-		// 			Role:      dataSeeder.role,
-		// 			Status:    dataSeeder.status,
-		// 			COAType:   dataSeeder.coaType,
-		// 			CreatedAt: time.Now(),
-		// 			UpdatedAt: time.Now(),
-		// 		},
-		// 		wallets: []entity.Wallet{
-		// 			{
-		// 				ID:           "wallet_id_cash",
-		// 				AccountPhone: dataSeeder.phone,
-		// 				Balance:      int64(0),
-		// 				Type:         WalletTypeCash,
-		// 				CreatedAt:    time.Now(),
-		// 				UpdatedAt:    time.Now(),
-		// 			},
-		// 			{
-		// 				ID:           "wallet_id_point",
-		// 				AccountPhone: dataSeeder.phone,
-		// 				Balance:      int64(0),
-		// 				Type:         WalletTypePoint,
-		// 				CreatedAt:    time.Now(),
-		// 				UpdatedAt:    time.Now(),
-		// 			},
-		// 		},
-		// 		counter: &entity.TransferCounter{
-		// 			WalletID:            "wallet_id_cash",
-		// 			CreditCountDaily:    int16(0),
-		// 			CreditCountMonthly:  int16(0),
-		// 			CreditAmountDaily:   int64(0),
-		// 			CreditAmountMonthly: int64(0),
-		// 			CreatedAt:           time.Now(),
-		// 			UpdatedAt:           time.Now(),
-		// 		},
-		// 	},
-		// 	mockResults: mockResults{
-		// 		err: nil,
-		// 	},
-		// 	want: &CreateAccountResponse{
-		// 		Success: true,
-		// 		Data: &AccountWalletData{
-		// 			Phone:     dataSeeder.phone,
-		// 			Name:      dataSeeder.name,
-		// 			Email:     dataSeeder.email,
-		// 			Role:      dataSeeder.role,
-		// 			Status:    dataSeeder.status,
-		// 			COAType:   dataSeeder.coaType,
-		// 			CreatedAt: time.Now().Format(time.RFC3339),
-		// 			UpdatedAt: time.Now().Format(time.RFC3339),
-		// 			Wallets: []WalletSummary{
-		// 				{
-		// 					ID:      dataSeeder.walletIDCash,
-		// 					Type:    WalletTypeCash,
-		// 					Balance: int64(0),
-		// 				},
-		// 				{
-		// 					ID:      dataSeeder.walletIDPoint,
-		// 					Type:    WalletTypePoint,
-		// 					Balance: int64(0),
-		// 				},
-		// 			},
-		// 		},
-		// 		Error: nil,
-		// 	},
-		// },
+		{
+			name:     "Account existed",
+			callMock: true,
+			args: args{
+				ctx: context.Background(),
+				params: CreateAccountRequest{
+					Name:    "User existed",
+					Phone:   dataSeeder.phone,
+					Email:   "existed@domain.com",
+					COAType: AccountCOATypeLiabilities,
+				},
+			},
+			mockResults: mockResults{
+				err: errors.New("sql: violates unique constraint"),
+			},
+			want: &CreateAccountResponse{
+				Success: false,
+				Data:    nil,
+				Error:   httperrors.GenerateError(httperrors.DataDuplication, "Fail to create new account, account existed"),
+			},
+		},
+		{
+			name: "Fail to create new account due to unknown DB error",
+			args: args{
+				ctx: context.Background(),
+				params: CreateAccountRequest{
+					Name:    dataSeeder.name,
+					Phone:   dataSeeder.phone,
+					Email:   dataSeeder.email,
+					COAType: AccountCOATypeLiabilities,
+				},
+			},
+			mockResults: mockResults{
+				err: errors.New("pq: some db error"),
+			},
+			want: &CreateAccountResponse{
+				Success: false,
+				Error:   httperrors.GenerateError(httperrors.GenericInternalError, "Fail to create new account"),
+				Data:    nil,
+			},
+		},
+		{
+			name: "Successfully create new account",
+			args: args{
+				ctx: context.Background(),
+				params: CreateAccountRequest{
+					Name:    dataSeeder.name,
+					Phone:   dataSeeder.phone,
+					Email:   dataSeeder.email,
+					COAType: dataSeeder.coaType,
+				},
+			},
+			mockResults: mockResults{
+				err: nil,
+			},
+			want: &CreateAccountResponse{
+				Success: true,
+				Error:   nil,
+				Data: &AccountWalletData{
+					Phone:     dataSeeder.phone,
+					Name:      dataSeeder.name,
+					Email:     dataSeeder.email,
+					Role:      dataSeeder.role,
+					Status:    dataSeeder.status,
+					COAType:   dataSeeder.coaType,
+					CreatedAt: dataSeeder.createdAt.Format(time.RFC3339),
+					UpdatedAt: dataSeeder.updatedAt.Format(time.RFC3339),
+					Wallets: []WalletSummary{
+						{
+							ID:      dataSeeder.walletIDCash,
+							Type:    WalletTypeCash,
+							Balance: int64(0),
+						},
+						{
+							ID:      dataSeeder.walletIDPoint,
+							Type:    WalletTypePoint,
+							Balance: int64(0),
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -284,17 +179,20 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 				config: config.GetAppConfig(),
 			}
 
-			if !strings.Contains(tt.name, "Invalid request params") {
-				fmt.Println("tt name calling mock: ", tt.name)
-				mockStore.On(tt.mockMethod, tt.args.ctx, tt.mockArgs.account, tt.mockArgs.wallets, tt.mockArgs.counter).Return(tt.mockResults.err)
+			mockStore.On(
+				"CreateAccountTx",
+				tt.args.ctx,
+				mock.AnythingOfType("*entity.Account"),
+				mock.Anything, // will error if passing an slice of type here
+				mock.AnythingOfType("*entity.TransferCounter"),
+			).Return(tt.mockResults.err).Maybe()
+
+			// got := u.CreateAccount(tt.args.ctx, tt.args.params)
+			// assert.Equalf(t, tt.want, got, "%v must equal to %v", got, tt.want)
+
+			if got := u.CreateAccount(tt.args.ctx, tt.args.params); !reflect.DeepEqual(got.Success, tt.want.Success) {
+				t.Errorf("AppCreateAccount() = %v, want %v", got, tt.want)
 			}
-
-			got := u.CreateAccount(tt.args.ctx, tt.args.params)
-			assert.Equal(t, tt.want, got)
-
-			// if got := u.CreateAccount(tt.args.ctx, tt.args.params); !reflect.DeepEqual(got.Success, tt.want.Success) {
-			// 	t.Errorf("AppCreateAccount() = %v, want %v", got, tt.want)
-			// }
 		})
 	}
 }
