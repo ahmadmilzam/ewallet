@@ -180,11 +180,8 @@ func TestAppUsecase_CreateAccount(t *testing.T) {
 				mock.AnythingOfType("*entity.TransferCounter"),
 			).Return(tt.mockResults.err).Maybe()
 
-			// got := u.CreateAccount(tt.args.ctx, tt.args.params)
-			// assert.Equalf(t, tt.want, got, "%v must equal to %v", got, tt.want)
-
 			if got := u.CreateAccount(tt.args.ctx, tt.args.params); !reflect.DeepEqual(got.Success, tt.want.Success) {
-				t.Errorf("AppCreateAccount() = %v, want %v", got, tt.want)
+				t.Errorf("AppUsecase.CreateAccount() got %v but want %v", got, tt.want)
 			}
 		})
 	}
